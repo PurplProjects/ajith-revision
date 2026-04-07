@@ -1,38 +1,30 @@
-import { Link, useLocation } from 'react-router-dom'
+import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 
-export default function Layout({ children }) {
-  const { pathname } = useLocation()
-
+export default function Layout() {
+  const navigate = useNavigate()
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <span className="text-base font-semibold text-gray-900">Ajith's Revision Hub</span>
-            <span className="text-xs text-gray-400 hidden sm:inline">Brentwood School · Year 7</span>
-          </Link>
-          <div className="flex items-center gap-1">
-            <Link
-              to="/"
-              className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                pathname === '/' ? 'bg-gray-100 text-gray-900 font-medium' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
-              }`}
-            >
-              Dashboard
-            </Link>
-            <Link
-              to="/progress"
-              className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                pathname === '/progress' ? 'bg-gray-100 text-gray-900 font-medium' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
-              }`}
-            >
-              Progress
-            </Link>
-          </div>
+      <header className="bg-white shadow-sm border-b border-gray-200">
+        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+          <button onClick={() => navigate('/')} className="flex items-center gap-2 hover:opacity-80">
+            <span className="text-2xl">🎓</span>
+            <span className="font-bold text-gray-800 text-lg">Ajith's Revision Hub</span>
+          </button>
+          <nav className="flex items-center gap-1">
+            <NavLink to="/" end className={({isActive}) =>
+              `px-3 py-1.5 rounded-lg text-sm font-medium transition ${isActive ? 'bg-indigo-100 text-indigo-700' : 'text-gray-600 hover:bg-gray-100'}`
+            }>Home</NavLink>
+            <NavLink to="/progress" className={({isActive}) =>
+              `px-3 py-1.5 rounded-lg text-sm font-medium transition ${isActive ? 'bg-indigo-100 text-indigo-700' : 'text-gray-600 hover:bg-gray-100'}`
+            }>Progress</NavLink>
+            <a href="/parent" target="_blank" className="px-3 py-1.5 rounded-lg text-sm font-medium text-purple-600 hover:bg-purple-50 transition">
+              👨‍👩‍👦 Parent View
+            </a>
+          </nav>
         </div>
-      </nav>
-      <main className="max-w-6xl mx-auto px-4 py-6">
-        {children}
+      </header>
+      <main className="max-w-5xl mx-auto px-4 py-6">
+        <Outlet />
       </main>
     </div>
   )
