@@ -105,4 +105,43 @@ export default function SubjectPage() {
               <div className="px-4 pb-4 border-t border-gray-100">
                 {topic.content.map((section, i) => (
                   <div key={i} className="mt-3">
-                    <h3 className=
+                    <h3 className="font-semibold text-gray-700 text-sm mb-2">{section.heading}</h3>
+                    <ul className="space-y-1">
+                      {section.points.map((p, j) => (
+                        <li key={j} className="text-sm text-gray-600 flex gap-2">
+                          <span className="text-indigo-400 flex-shrink-0">•</span>
+                          <span>{p}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+                {topic.tip && (
+                  <div className="mt-3 p-3 bg-amber-50 rounded-lg border border-amber-100">
+                    <span className="text-xs font-semibold text-amber-700">💡 Revision tip: </span>
+                    <span className="text-xs text-amber-700">{topic.tip}</span>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 text-center">
+        <h3 className="font-bold text-gray-800 text-lg mb-1">Ready to test yourself?</h3>
+        <p className="text-sm text-gray-500 mb-4">10 questions — mix of difficulty levels — instant results</p>
+        <button
+          onClick={() => { stopSession(); navigate(`/subject/${subjectId}/test`) }}
+          className="px-8 py-3 rounded-xl font-bold text-white text-base shadow-md hover:opacity-90 transition"
+          style={{ backgroundColor: subject.color }}
+        >
+          Start Test →
+        </button>
+        {submissions.length > 0 && (
+          <p className="text-xs text-gray-400 mt-3">Attempt #{submissions.length + 1}</p>
+        )}
+      </div>
+    </div>
+  )
+}
