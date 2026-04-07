@@ -1,28 +1,23 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { useEffect } from 'react'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import Layout from './components/Layout'
 import Dashboard from './pages/Dashboard'
 import SubjectPage from './pages/SubjectPage'
 import AssignmentPage from './pages/AssignmentPage'
 import ProgressPage from './pages/ProgressPage'
-import Layout from './components/Layout'
-import { seedQuestionsIfNeeded } from './lib/db'
+import ParentDashboard from './pages/ParentDashboard'
 
 export default function App() {
-  useEffect(() => {
-    seedQuestionsIfNeeded()
-  }, [])
-
   return (
     <BrowserRouter>
-      <Layout>
-        <Routes>
+      <Routes>
+        <Route path="/parent" element={<ParentDashboard />} />
+        <Route element={<Layout />}>
           <Route path="/" element={<Dashboard />} />
           <Route path="/subject/:subjectId" element={<SubjectPage />} />
-          <Route path="/subject/:subjectId/assignment" element={<AssignmentPage />} />
+          <Route path="/subject/:subjectId/test" element={<AssignmentPage />} />
           <Route path="/progress" element={<ProgressPage />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </Layout>
+        </Route>
+      </Routes>
     </BrowserRouter>
   )
 }
