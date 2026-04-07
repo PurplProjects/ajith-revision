@@ -1,200 +1,100 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { SUBJECTS } from '../data/curriculum'
-import { fetchProgress, fetchWeeklyActivity, fetchRecentActivity } from '../lib/db'
-
-function formatTime(seconds) {
-  if (!seconds) return '0m'
-  const h = Math.floor(seconds / 3600)
-  const m = Math.floor((seconds % 3600) / 60)
-  if (h > 0) return `${h}h ${m}m`
-  return `${m}m`
-}
-
-function timeAgo(isoString) {
-  const diff = (Date.now() - new Date(isoString)) / 1000
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`
-  return `${Math.floor(diff / 86400)}d ago`
-}
+import { seedQuestionsIfNeeded, fetchProgress, fetchExposuresBySubject } from '../lib/db'
 
 export default function Dashboard() {
   const navigate = useNavigate()
   const [progress, setProgress] = useState(null)
-  const [weeklyData, setWeeklyData] = useState({})
-  const [recentActivity, setRecentActivity] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [exposures, setExposures] = useState({})
+  const [seeding, setSeeding] = useState(true)
 
   useEffect(() => {
-    Promise.all([fetchProgress(), fetchWeeklyActivity(), fetchRecentActivity()])
-      .then(([prog, weekly, recent]) => {
-        setProgress(prog)
-        setWeeklyData(weekly)
-        setRecentActivity(recent)
-      })
-      .finally(() => setLoading(false))
+    async function init() {
+      await seedQuestionsIfNeeded()
+      setSeeding(false)
+      const [p, e] = await Promise.all([fetchProgress(), fetchExposuresBySubject()])
+      setProgress(p)
+      setExposures(e)
+    }
+    init()
   }, [])
 
-  const totalSeconds = progress
-    ? Object.values(progress.timeBySubject).reduce((a, b) => a + b, 0)
-    : 0
-  const subjectsVisited = progress
-    ? Object.keys(progress.timeBySubject).filter(k => progress.timeBySubject[k] > 0).length
-    : 0
-  const assignmentsDone = progress
-    ? Object.values(progress.submissionsBySubject).filter(Boolean).length
-    : 0
-  const allConfidences = progress
-    ? Object.values(progress.confidenceBySubject).flat()
-    : []
-  const avgConfidence = allConfidences.length
-    ? (allConfidences.reduce((a, b) => a + b, 0) / allConfidences.length).toFixed(1)
-    : '—'
+  const totalAttempts = progress ? Object.values(progress.attemptsBySubject).reduce((a, b) => a + b, 0) : 0
+  const totalMinutes = progress ? Math.round(Object.values(progress.timeBySubject).reduce((a, b) => a + b, 0) / 60) : 0
 
-  const WEEK_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-  const maxMinutes = Math.max(...WEEK_DAYS.map(d => weeklyData[d] ?? 0), 1)
-
-  const greeting = () => {
-    const h = new Date().getHours()
-    if (h < 12) return 'Good morning'
-    if (h < 17) return 'Good afternoon'
-    return 'Good evening'
-  }
+  if (seeding) return (
+    <div className="flex flex-col items-center justify-center py-24 gap-4">
+      <div className="text-4xl animate-spin">⚙️</div>
+      <p className="text-gray-600 font-medium">Setting up your revision hub…</p>
+      <p className="text-gray-400 text-sm">Loading questions for the first time</p>
+    </div>
+  )
 
   return (
     <div>
-      {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-gray-900">{greeting()}, Ajith</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          {subjectsVisited === 0
-            ? 'Ready to start? Pick a subject below.'
-            : `You've studied ${subjectsVisited} subject${subjectsVisited !== 1 ? 's' : ''} so far this holiday.`}
-        </p>
+        <h1 className="text-2xl font-bold text-gray-900">👋 Welcome back, Ajith!</h1>
+        <p className="text-gray-500 mt-1">Easter revision — choose a subject to study or test yourself.</p>
       </div>
 
-      {/* Stats row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
-        {[
-          { label: 'Total study time', value: formatTime(totalSeconds) },
-          { label: 'Subjects visited', value: `${subjectsVisited} of ${SUBJECTS.length}` },
-          { label: 'Assignments done', value: `${assignmentsDone} of ${SUBJECTS.length}` },
-          { label: 'Avg confidence', value: `${avgConfidence}${avgConfidence !== '—' ? '/5' : ''}` },
-        ].map(stat => (
-          <div key={stat.label} className="bg-gray-100 rounded-xl p-4">
-            <div className="text-xs text-gray-500 mb-1">{stat.label}</div>
-            <div className="text-xl font-semibold text-gray-900">{loading ? '…' : stat.value}</div>
-          </div>
-        ))}
-      </div>
+      {/* Stats bar */}
+      {progress && (
+        <div className="grid grid-cols-3 gap-3 mb-6">
+          {[
+            { label: 'Tests completed', value: totalAttempts, icon: '📝' },
+            { label: 'Minutes studied', value: totalMinutes, icon: '⏱️' },
+            { label: 'Subjects attempted', value: Object.keys(progress.attemptsBySubject).length, icon: '📚' },
+          ].map(s => (
+            <div key={s.label} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
+              <div className="text-2xl mb-1">{s.icon}</div>
+              <div className="text-2xl font-bold text-gray-800">{s.value}</div>
+              <div className="text-xs text-gray-500">{s.label}</div>
+            </div>
+          ))}
+        </div>
+      )}
 
-      {/* Subjects grid */}
-      <h2 className="text-sm font-medium text-gray-700 mb-3">Subjects</h2>
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+      {/* Subject grid */}
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
         {SUBJECTS.map(subject => {
-          const topicCount = subject.topics.length
-          const visitedCount = progress?.topicsBySubject[subject.id]?.size ?? 0
-          const pct = Math.round((visitedCount / topicCount) * 100)
-          const subjectSeconds = progress?.timeBySubject[subject.id] ?? 0
-          const done = progress?.submissionsBySubject[subject.id]
+          const attempts = progress?.attemptsBySubject[subject.id] ?? 0
+          const scores = progress?.scoresBySubject[subject.id] ?? []
+          const lastScore = scores.length > 0 ? scores[scores.length - 1] : null
+          const pct = lastScore ? Math.round((lastScore.score / lastScore.total) * 100) : null
+          const exp = exposures[subject.id] ?? { seen: 0, total: 50 }
 
           return (
-            <button
+            <div
               key={subject.id}
               onClick={() => navigate(`/subject/${subject.id}`)}
-              className="card text-left hover:border-gray-300 transition-colors group"
+              className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all"
             >
-              <div
-                className="w-10 h-10 rounded-lg flex items-center justify-center text-xl mb-3"
-                style={{ background: subject.bgColor }}
-              >
-                {subject.icon}
-              </div>
-              <div className="text-sm font-medium text-gray-900 mb-0.5">{subject.name}</div>
-              <div className="text-xs text-gray-400 mb-3">{subject.description}</div>
-              <div className="progress-bar mb-1">
+              <div className="text-3xl mb-2">{subject.icon}</div>
+              <h2 className="font-bold text-gray-800 text-base">{subject.name}</h2>
+              <p className="text-xs text-gray-400 mt-0.5 mb-3">{subject.description}</p>
+
+              {/* Progress bar */}
+              <div className="w-full bg-gray-100 rounded-full h-1.5 mb-2">
                 <div
-                  className="progress-fill"
-                  style={{ width: `${pct}%`, background: subject.color }}
+                  className="h-1.5 rounded-full transition-all"
+                  style={{ width: `${Math.min(100, (exp.seen / Math.max(exp.total, 1)) * 100)}%`, backgroundColor: subject.color }}
                 />
               </div>
-              <div className="flex items-center justify-between mt-2">
-                <span className="text-xs text-gray-400">
-                  {subjectSeconds > 0 ? formatTime(subjectSeconds) : 'Not started'}
-                </span>
-                {done && (
-                  <span
-                    className="text-xs px-2 py-0.5 rounded-full font-medium"
-                    style={{ background: '#E1F5EE', color: '#0F6E56' }}
-                  >
-                    ✓ done
+              <div className="flex items-center justify-between text-xs text-gray-400">
+                <span>{exp.seen}/{exp.total} questions seen</span>
+                {pct !== null && (
+                  <span className="font-semibold" style={{ color: subject.color }}>
+                    Last: {pct}%
                   </span>
                 )}
               </div>
-            </button>
+              {attempts > 0 && (
+                <div className="mt-2 text-xs text-gray-400">{attempts} test{attempts > 1 ? 's' : ''} done</div>
+              )}
+            </div>
           )
         })}
-      </div>
-
-      {/* Bottom row: bar chart + recent activity */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {/* Weekly bar chart */}
-        <div className="card">
-          <h3 className="text-sm font-medium text-gray-700 mb-4">Study time this week (minutes)</h3>
-          <div className="flex items-end gap-2 h-20 mb-2">
-            {WEEK_DAYS.map(day => {
-              const mins = weeklyData[day] ?? 0
-              const height = maxMinutes > 0 ? Math.max((mins / maxMinutes) * 80, mins > 0 ? 4 : 0) : 0
-              return (
-                <div key={day} className="flex-1 flex flex-col items-center gap-1">
-                  <div
-                    className="w-full rounded-t-sm transition-all"
-                    style={{
-                      height: `${height}px`,
-                      background: mins > 0 ? '#378ADD' : '#E5E7EB',
-                    }}
-                  />
-                </div>
-              )
-            })}
-          </div>
-          <div className="flex gap-2">
-            {WEEK_DAYS.map(day => (
-              <div key={day} className="flex-1 text-center text-xs text-gray-400">{day}</div>
-            ))}
-          </div>
-        </div>
-
-        {/* Recent activity */}
-        <div className="card">
-          <h3 className="text-sm font-medium text-gray-700 mb-3">Recent activity</h3>
-          {recentActivity.length === 0 ? (
-            <p className="text-sm text-gray-400">No sessions yet — pick a subject to get started!</p>
-          ) : (
-            <div className="space-y-0">
-              {recentActivity.map((session, i) => {
-                const subject = SUBJECTS.find(s => s.id === session.subject_id)
-                const topic = subject?.topics.find(t => t.id === session.topic_id)
-                return (
-                  <div key={i} className="flex items-center gap-3 py-2.5 border-b border-gray-100 last:border-0">
-                    <div
-                      className="w-2 h-2 rounded-full flex-shrink-0"
-                      style={{ background: subject?.color ?? '#999' }}
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium text-gray-900">{subject?.name}</div>
-                      <div className="text-xs text-gray-400 truncate">{topic?.title}</div>
-                    </div>
-                    <div className="text-right flex-shrink-0">
-                      <div className="text-xs text-gray-400">{timeAgo(session.started_at)}</div>
-                      <div className="text-xs text-gray-500">{formatTime(session.duration_seconds)}</div>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          )}
-        </div>
       </div>
     </div>
   )
