@@ -42,7 +42,6 @@ export default function AssignmentPage() {
         setQuestions(qs)
         setAttemptNum(n)
         setHistory(hist)
-        await logQuestionExposures(qs.map(q => q.id))
         setPhase('intro')
       } catch (e) {
         console.error(e)
@@ -57,6 +56,7 @@ export default function AssignmentPage() {
     <div className="text-center py-20 text-gray-500">Subject not found</div>
   )
 
+  // ── PHASE: LOADING ───────────────────────────────────────────────
   if (phase === 'loading') return (
     <div className="flex flex-col items-center py-20 gap-3">
       <div className="text-3xl animate-spin">⚙️</div>
@@ -64,6 +64,7 @@ export default function AssignmentPage() {
     </div>
   )
 
+  // ── PHASE: ERROR ─────────────────────────────────────────────────
   if (phase === 'error') return (
     <div className="max-w-xl mx-auto text-center py-16">
       <div className="text-5xl mb-4">⚠️</div>
@@ -75,6 +76,7 @@ export default function AssignmentPage() {
     </div>
   )
 
+  // ── PHASE: INTRO ─────────────────────────────────────────────────
   if (phase === 'intro') return (
     <div className="max-w-xl mx-auto text-center py-10">
       <div className="text-5xl mb-4">{subject.icon}</div>
@@ -100,6 +102,7 @@ export default function AssignmentPage() {
     </div>
   )
 
+  // ── PHASE: TEST ──────────────────────────────────────────────────
   if (phase === 'test') {
     const q = questions[current]
     if (!q) return null
@@ -114,12 +117,17 @@ export default function AssignmentPage() {
       setRevealed(true)
     }
 
+    function handleSASubmit() {
+      setRevealed(true)
+    }
+
     async function handleNext() {
       setRevealed(false)
       if (isLastQ) {
         const mcQs = questions.filter(q => q.type === 'multiple_choice')
         const mcScore = mcQs.filter(q => answers[q.id] === q.correct_index).length
         setScore({ correct: mcScore, total: mcQs.length })
+        await logQuestionExposures(questions.map(q => q.id))
         await saveSubmission({
           subjectId,
           subjectName: subject.name,
@@ -204,7 +212,7 @@ export default function AssignmentPage() {
               />
               {!revealed && (
                 <button
-                  onClick={() => setRevealed(true)}
+                  onClick={handleSASubmit}
                   disabled={!answers[q.id]?.trim()}
                   className="mt-2 px-4 py-2 rounded-lg text-sm font-medium text-white disabled:opacity-40 transition"
                   style={{ backgroundColor: subject.color }}
@@ -269,8 +277,9 @@ export default function AssignmentPage() {
     )
   }
 
+  // ── PHASE: RESULTS ───────────────────────────────────────────────
   if (phase === 'results' && score !== null) {
-    const pct = score.total > 0 ? Math.round((score.correct / score.total) * 100) : 0
+    const pct = Math.round((score.correct / score.total) * 100)
     const emoji = pct >= 80 ? '🏆' : pct >= 60 ? '👍' : pct >= 40 ? '💪' : '📚'
     const saCount = questions.filter(q => q.type === 'short_answer').length
 
