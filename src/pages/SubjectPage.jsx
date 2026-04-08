@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { getSubject } from '../data/curriculum'
 import { startSession, endSession, fetchSubjectSubmissions, fetchVisitedTopics } from '../lib/db'
@@ -12,6 +12,7 @@ export default function SubjectPage() {
   const [visited, setVisited] = useState(new Set())
   const [elapsed, setElapsed] = useState(0)
 
+  // Use refs for everything timer-related so closures always see current values
   const sessionIdRef = useRef(null)
   const startTimeRef = useRef(null)
   const intervalRef = useRef(null)
@@ -22,7 +23,7 @@ export default function SubjectPage() {
     fetchVisitedTopics().then(setVisited)
   }, [subjectId])
 
-  // Cleanup on unmount only
+  // Cleanup on unmount — refs are always current so no stale closure problem
   useEffect(() => {
     return () => {
       clearInterval(intervalRef.current)
@@ -30,8 +31,10 @@ export default function SubjectPage() {
         const duration = Math.floor((Date.now() - startTimeRef.current) / 1000)
         endSession(sessionIdRef.current, duration)
       }
+      sessionIdRef.current = null
+      startTimeRef.current = null
     }
-  }, []) // empty array is correct — refs don't need to be deps
+  }, []) // empty — intentional, refs don't need to be deps
 
   function stopSession() {
     clearInterval(intervalRef.current)
@@ -39,20 +42,24 @@ export default function SubjectPage() {
     if (sessionIdRef.current && startTimeRef.current) {
       const duration = Math.floor((Date.now() - startTimeRef.current) / 1000)
       endSession(sessionIdRef.current, duration)
-      sessionIdRef.current = null
-      startTimeRef.current = null
     }
+    sessionIdRef.current = null
+    startTimeRef.current = null
     setElapsed(0)
   }
 
   async function startTopicSession(topicId) {
     stopSession()
     const sid = await startSession(subjectId, topicId)
+    if (!sid) return
     sessionIdRef.current = sid
     startTimeRef.current = Date.now()
     setElapsed(0)
+    // Tick every second using ref so it always reads current startTime
     intervalRef.current = setInterval(() => {
-      setElapsed(Math.floor((Date.now() - startTimeRef.current) / 1000))
+      if (startTimeRef.current) {
+        setElapsed(Math.floor((Date.now() - startTimeRef.current) / 1000))
+      }
     }, 1000)
   }
 
@@ -61,8 +68,8 @@ export default function SubjectPage() {
       stopSession()
       setOpenTopic(null)
     } else {
-      await startTopicSession(topic.id)
       setOpenTopic(topic.id)
+      await startTopicSession(topic.id)
     }
   }
 
@@ -102,7 +109,7 @@ export default function SubjectPage() {
                 <span className="font-medium text-gray-800">{topic.title}</span>
               </div>
               <div className="flex items-center gap-2">
-                {openTopic === topic.id && (
+                {openTopic === topic.id && elapsed > 0 && (
                   <span className="text-xs text-indigo-500 font-medium">{elapsed}s</span>
                 )}
                 <span className="text-gray-400 text-sm">{openTopic === topic.id ? '▲' : '▼'}</span>
