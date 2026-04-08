@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { getSubject } from '../data/curriculum'
 import {
-  selectQuestionsForTest, logQuestionExposures, saveSubmission,
-  getNextAttemptNumber, fetchSubjectSubmissions
+  seedQuestionsIfNeeded, selectQuestionsForTest, logQuestionExposures,
+  saveSubmission, getNextAttemptNumber, fetchSubjectSubmissions
 } from '../lib/db'
 
 const CONFIDENCE_LABELS = { 1: '😟 Very unsure', 2: '😕 Unsure', 3: '😐 OK', 4: '🙂 Confident', 5: '😄 Very confident' }
@@ -13,35 +13,50 @@ export default function AssignmentPage() {
   const navigate = useNavigate()
   const subject = getSubject(subjectId)
 
-  const [phase, setPhase] = useState('loading') // loading | intro | test | results | history
+  const [phase, setPhase] = useState('loading')
   const [questions, setQuestions] = useState([])
   const [current, setCurrent] = useState(0)
-  const [answers, setAnswers] = useState({}) // { qId: answer }
+  const [answers, setAnswers] = useState({})
   const [revealed, setRevealed] = useState(false)
   const [confidence, setConfidence] = useState(3)
   const [attemptNum, setAttemptNum] = useState(1)
   const [history, setHistory] = useState([])
   const [score, setScore] = useState(null)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
+    if (!subject) return
     async function load() {
-      const [qs, n, hist] = await Promise.all([
-        selectQuestionsForTest(subjectId),
-        getNextAttemptNumber(subjectId),
-        fetchSubjectSubmissions(subjectId),
-      ])
-      setQuestions(qs)
-      setAttemptNum(n)
-      setHistory(hist)
-      await logQuestionExposures(qs.map(q => q.id))
-      setPhase('intro')
+      try {
+        await seedQuestionsIfNeeded()
+        const [qs, n, hist] = await Promise.all([
+          selectQuestionsForTest(subjectId),
+          getNextAttemptNumber(subjectId),
+          fetchSubjectSubmissions(subjectId),
+        ])
+        if (!qs || qs.length === 0) {
+          setError('No questions found for this subject. Please go back to the home page first to initialise the question bank.')
+          setPhase('error')
+          return
+        }
+        setQuestions(qs)
+        setAttemptNum(n)
+        setHistory(hist)
+        await logQuestionExposures(qs.map(q => q.id))
+        setPhase('intro')
+      } catch (e) {
+        console.error(e)
+        setError('Something went wrong loading the test. Please check your Supabase connection.')
+        setPhase('error')
+      }
     }
     load()
   }, [subjectId])
 
-  if (!subject) return null
+  if (!subject) return (
+    <div className="text-center py-20 text-gray-500">Subject not found</div>
+  )
 
-  // ── PHASE: LOADING ──────────────────────────────────────────────
   if (phase === 'loading') return (
     <div className="flex flex-col items-center py-20 gap-3">
       <div className="text-3xl animate-spin">⚙️</div>
@@ -49,7 +64,17 @@ export default function AssignmentPage() {
     </div>
   )
 
-  // ── PHASE: INTRO ──────────────────────────────────────────────
+  if (phase === 'error') return (
+    <div className="max-w-xl mx-auto text-center py-16">
+      <div className="text-5xl mb-4">⚠️</div>
+      <h2 className="text-xl font-bold text-gray-800 mb-2">Couldn't load test</h2>
+      <p className="text-gray-500 mb-6 text-sm">{error}</p>
+      <button onClick={() => navigate('/')} className="px-6 py-2 rounded-xl bg-indigo-600 text-white font-semibold hover:opacity-90">
+        Go to Home
+      </button>
+    </div>
+  )
+
   if (phase === 'intro') return (
     <div className="max-w-xl mx-auto text-center py-10">
       <div className="text-5xl mb-4">{subject.icon}</div>
@@ -75,9 +100,9 @@ export default function AssignmentPage() {
     </div>
   )
 
-  // ── PHASE: TEST ──────────────────────────────────────────────────
   if (phase === 'test') {
     const q = questions[current]
+    if (!q) return null
     const isLastQ = current === questions.length - 1
     const isMC = q.type === 'multiple_choice'
     const userAnswer = answers[q.id]
@@ -89,18 +114,12 @@ export default function AssignmentPage() {
       setRevealed(true)
     }
 
-    function handleSASubmit() {
-      setRevealed(true)
-    }
-
     async function handleNext() {
       setRevealed(false)
       if (isLastQ) {
-        // Calculate score
         const mcQs = questions.filter(q => q.type === 'multiple_choice')
         const mcScore = mcQs.filter(q => answers[q.id] === q.correct_index).length
         setScore({ correct: mcScore, total: mcQs.length })
-
         await saveSubmission({
           subjectId,
           subjectName: subject.name,
@@ -119,7 +138,6 @@ export default function AssignmentPage() {
 
     return (
       <div className="max-w-2xl mx-auto">
-        {/* Progress */}
         <div className="flex items-center gap-3 mb-6">
           <button onClick={() => navigate(`/subject/${subjectId}`)} className="text-gray-400 hover:text-gray-600">←</button>
           <div className="flex-1">
@@ -139,20 +157,16 @@ export default function AssignmentPage() {
         </div>
 
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-          {/* Topic tag */}
           <span className="text-xs text-gray-400 mb-3 block">{q.topic}</span>
 
-          {/* Extract */}
           {q.extract && (
             <blockquote className="border-l-4 border-indigo-200 pl-4 mb-4 text-sm text-gray-600 italic">
               {q.extract}
             </blockquote>
           )}
 
-          {/* Question */}
           <h2 className="text-lg font-semibold text-gray-800 mb-5">{q.question}</h2>
 
-          {/* MC Options */}
           {isMC && (
             <div className="space-y-2">
               {q.options.map((opt, i) => {
@@ -178,7 +192,6 @@ export default function AssignmentPage() {
             </div>
           )}
 
-          {/* Short answer */}
           {!isMC && (
             <div>
               <textarea
@@ -191,7 +204,7 @@ export default function AssignmentPage() {
               />
               {!revealed && (
                 <button
-                  onClick={handleSASubmit}
+                  onClick={() => setRevealed(true)}
                   disabled={!answers[q.id]?.trim()}
                   className="mt-2 px-4 py-2 rounded-lg text-sm font-medium text-white disabled:opacity-40 transition"
                   style={{ backgroundColor: subject.color }}
@@ -202,7 +215,6 @@ export default function AssignmentPage() {
             </div>
           )}
 
-          {/* Explanation (MC) */}
           {revealed && isMC && (
             <div className={`mt-4 p-4 rounded-xl text-sm ${isCorrect ? 'bg-green-50 border border-green-200' : 'bg-amber-50 border border-amber-200'}`}>
               <p className="font-semibold mb-1">{isCorrect ? '✅ Correct!' : '❌ Not quite'}</p>
@@ -210,7 +222,6 @@ export default function AssignmentPage() {
             </div>
           )}
 
-          {/* Model answer hint (short answer) */}
           {revealed && !isMC && (
             <div className="mt-4 p-4 rounded-xl bg-blue-50 border border-blue-200 text-sm">
               <p className="font-semibold text-blue-800 mb-1">📝 Check your answer</p>
@@ -218,7 +229,6 @@ export default function AssignmentPage() {
             </div>
           )}
 
-          {/* Next button */}
           {revealed && (
             <div className="mt-4 flex justify-end">
               {isLastQ ? (
@@ -259,9 +269,8 @@ export default function AssignmentPage() {
     )
   }
 
-  // ── PHASE: RESULTS ──────────────────────────────────────────────
   if (phase === 'results' && score !== null) {
-    const pct = Math.round((score.correct / score.total) * 100)
+    const pct = score.total > 0 ? Math.round((score.correct / score.total) * 100) : 0
     const emoji = pct >= 80 ? '🏆' : pct >= 60 ? '👍' : pct >= 40 ? '💪' : '📚'
     const saCount = questions.filter(q => q.type === 'short_answer').length
 
@@ -277,10 +286,9 @@ export default function AssignmentPage() {
           <p className="text-sm text-gray-600">Confidence: {CONFIDENCE_LABELS[confidence]}</p>
         </div>
 
-        {/* Per-question review */}
         <div className="space-y-3 mb-4">
           <h3 className="font-semibold text-gray-700 text-sm px-1">Question review</h3>
-          {questions.map((q, i) => {
+          {questions.map((q) => {
             const isMC = q.type === 'multiple_choice'
             const userAns = answers[q.id]
             const correct = isMC ? userAns === q.correct_index : null
@@ -294,7 +302,7 @@ export default function AssignmentPage() {
                     <p className="font-medium text-gray-800">{q.question}</p>
                     {isMC && (
                       <>
-                        {!correct && <p className="text-red-600 text-xs mt-1">Your answer: {q.options[userAns]}</p>}
+                        {!correct && <p className="text-red-600 text-xs mt-1">Your answer: {q.options[userAns] ?? 'Not answered'}</p>}
                         <p className="text-green-600 text-xs mt-1">Correct: {q.options[q.correct_index]}</p>
                         <p className="text-gray-500 text-xs mt-1">{q.explanation}</p>
                       </>
