@@ -1,7 +1,7 @@
 import { supabase, STUDENT_ID } from './supabase'
 import { SUBJECTS, getAllQuestions } from '../data/curriculum'
 
-// ─── Seed questions on first load ────────────────────────────────────────────
+// ─── Seed questions on first load ─────────────────────────────────────────────
 export async function seedQuestionsIfNeeded() {
   const { count } = await supabase
     .from('questions')
@@ -24,16 +24,13 @@ export async function seedQuestionsIfNeeded() {
     placeholder:   q.placeholder ?? null,
   }))
 
-  // Insert in batches of 100 to avoid request size limits
   for (let i = 0; i < questions.length; i += 100) {
     await supabase.from('questions').insert(questions.slice(i, i + 100))
   }
 }
 
-// ─── Smart question selection ─────────────────────────────────────────────────
-// Picks 10 least-shown questions for a subject, random within same show count
+// ─── Smart question selection ──────────────────────────────────────────────────
 export async function selectQuestionsForTest(subjectId) {
-  // Fetch all questions for subject
   const { data: allQuestions, error: qErr } = await supabase
     .from('questions')
     .select('*')
@@ -41,7 +38,6 @@ export async function selectQuestionsForTest(subjectId) {
 
   if (qErr || !allQuestions?.length) return []
 
-  // Fetch existing exposures for this student
   const questionIds = allQuestions.map(q => q.id)
   const { data: exposures } = await supabase
     .from('question_exposures')
@@ -54,13 +50,11 @@ export async function selectQuestionsForTest(subjectId) {
     exposureMap[e.question_id] = e.shown_count
   }
 
-  // Attach show count to each question (default 0 if never shown)
   const withCounts = allQuestions.map(q => ({
     ...q,
     shown_count: exposureMap[q.id] ?? 0,
   }))
 
-  // Sort by shown_count ascending, shuffle within same count (Fisher-Yates)
   const groups = {}
   for (const q of withCounts) {
     if (!groups[q.shown_count]) groups[q.shown_count] = []
@@ -70,7 +64,6 @@ export async function selectQuestionsForTest(subjectId) {
   const sorted = []
   for (const count of Object.keys(groups).map(Number).sort((a, b) => a - b)) {
     const group = groups[count]
-    // Shuffle group
     for (let i = group.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [group[i], group[j]] = [group[j], group[i]]
@@ -81,9 +74,8 @@ export async function selectQuestionsForTest(subjectId) {
   return sorted.slice(0, 10)
 }
 
-// ─── Log that questions were shown ───────────────────────────────────────────
+// ─── Log exposures ────────────────────────────────────────────────────────────
 export async function logQuestionExposures(questionIds) {
-  // For each question, upsert: if exists increment count, else insert with count=1
   for (const qid of questionIds) {
     const { data: existing } = await supabase
       .from('question_exposures')
@@ -105,7 +97,7 @@ export async function logQuestionExposures(questionIds) {
   }
 }
 
-// ─── Get next attempt number for a subject ────────────────────────────────────
+// ─── Attempt number ───────────────────────────────────────────────────────────
 export async function getNextAttemptNumber(subjectId) {
   const { count } = await supabase
     .from('assignment_submissions')
@@ -115,7 +107,7 @@ export async function getNextAttemptNumber(subjectId) {
   return (count ?? 0) + 1
 }
 
-// ─── Save assignment submission ───────────────────────────────────────────────
+// ─── Save submission ──────────────────────────────────────────────────────────
 export async function saveSubmission({ subjectId, subjectName, attemptNumber, questionsShown, answers, score, mcTotal, confidenceRating }) {
   const { error } = await supabase
     .from('assignment_submissions')
@@ -135,7 +127,43 @@ export async function saveSubmission({ subjectId, subjectName, attemptNumber, qu
   return !error
 }
 
-// ─── Fetch all submissions for a subject ─────────────────────────────────────
+// ─── Update short answer score (parent grading) ───────────────────────────────
+export async function updateSubmissionScore(submissionId, newScore) {
+  const { error } = await supabase
+    .from('assignment_submissions')
+    .update({ score: newScore })
+    .eq('id', submissionId)
+  if (error) console.error('updateSubmissionScore:', error)
+  return !error
+}
+
+// ─── Fetch submission with full question data ─────────────────────────────────
+export async function fetchSubmissionWithQuestions(submissionId) {
+  const { data: submission, error } = await supabase
+    .from('assignment_submissions')
+    .select('*')
+    .eq('id', submissionId)
+    .single()
+
+  if (error || !submission) return null
+
+  const questionIds = submission.questions_shown ?? []
+  if (questionIds.length === 0) return { submission, questions: [] }
+
+  const { data: questions } = await supabase
+    .from('questions')
+    .select('*')
+    .in('id', questionIds)
+
+  // Preserve order from questions_shown
+  const qMap = {}
+  for (const q of questions ?? []) qMap[q.id] = q
+  const orderedQuestions = questionIds.map(id => qMap[id]).filter(Boolean)
+
+  return { submission, questions: orderedQuestions }
+}
+
+// ─── Fetch submissions ────────────────────────────────────────────────────────
 export async function fetchSubjectSubmissions(subjectId) {
   const { data } = await supabase
     .from('assignment_submissions')
@@ -146,7 +174,6 @@ export async function fetchSubjectSubmissions(subjectId) {
   return data ?? []
 }
 
-// ─── Fetch all submissions (for parent dashboard) ─────────────────────────────
 export async function fetchAllSubmissions() {
   const { data } = await supabase
     .from('assignment_submissions')
@@ -156,16 +183,7 @@ export async function fetchAllSubmissions() {
   return data ?? []
 }
 
-// ─── Fetch exposure stats (how many unique questions seen per subject) ────────
-export async function fetchExposureStats() {
-  const { data } = await supabase
-    .from('question_exposures')
-    .select('question_id')
-    .eq('student_id', STUDENT_ID)
-    .gt('shown_count', 0)
-  return data?.length ?? 0
-}
-
+// ─── Exposures ────────────────────────────────────────────────────────────────
 export async function fetchExposuresBySubject() {
   const { data: exposures } = await supabase
     .from('question_exposures')
@@ -188,7 +206,7 @@ export async function fetchExposuresBySubject() {
   return result
 }
 
-// ─── Sessions ────────────────────────────────────────────────────────────────
+// ─── Sessions ─────────────────────────────────────────────────────────────────
 export async function startSession(subjectId, topicId) {
   const { data, error } = await supabase
     .from('sessions')
@@ -200,11 +218,13 @@ export async function startSession(subjectId, topicId) {
 }
 
 export async function endSession(sessionId, durationSeconds) {
-  if (!sessionId) return
-  await supabase
+  if (!sessionId || durationSeconds === undefined) return
+  const rounded = Math.max(1, Math.round(durationSeconds))
+  const { error } = await supabase
     .from('sessions')
-    .update({ ended_at: new Date().toISOString(), duration_seconds: Math.round(durationSeconds) })
+    .update({ ended_at: new Date().toISOString(), duration_seconds: rounded })
     .eq('id', sessionId)
+  if (error) console.error('endSession:', error)
 }
 
 export async function fetchVisitedTopics() {
@@ -222,6 +242,7 @@ export async function fetchProgress() {
     .select('subject_id, topic_id, duration_seconds')
     .eq('student_id', STUDENT_ID)
     .not('duration_seconds', 'is', null)
+    .gt('duration_seconds', 0)
 
   const { data: submissions } = await supabase
     .from('assignment_submissions')
@@ -252,34 +273,4 @@ export async function fetchProgress() {
   }
 
   return { timeBySubject, topicsBySubject, attemptsBySubject, scoresBySubject, confidenceBySubject }
-}
-
-export async function fetchWeeklyActivity() {
-  const sevenDaysAgo = new Date()
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6)
-  const { data } = await supabase
-    .from('sessions')
-    .select('started_at, duration_seconds')
-    .eq('student_id', STUDENT_ID)
-    .gte('started_at', sevenDaysAgo.toISOString())
-    .not('duration_seconds', 'is', null)
-
-  const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-  const byDay = {}
-  for (const s of data ?? []) {
-    const day = days[new Date(s.started_at).getDay()]
-    byDay[day] = (byDay[day] ?? 0) + Math.round((s.duration_seconds ?? 0) / 60)
-  }
-  return byDay
-}
-
-export async function fetchRecentActivity() {
-  const { data } = await supabase
-    .from('sessions')
-    .select('subject_id, topic_id, started_at, duration_seconds')
-    .eq('student_id', STUDENT_ID)
-    .not('duration_seconds', 'is', null)
-    .order('started_at', { ascending: false })
-    .limit(5)
-  return data ?? []
 }
