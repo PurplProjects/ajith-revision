@@ -128,10 +128,12 @@ export async function saveSubmission({ subjectId, subjectName, attemptNumber, qu
 }
 
 // ─── Update short answer score (parent grading) ───────────────────────────────
-export async function updateSubmissionScore(submissionId, newScore) {
+export async function updateSubmissionScore(submissionId, newScore, newTotal) {
+  const update = { score: newScore }
+  if (newTotal !== undefined) update.mc_total = newTotal
   const { error } = await supabase
     .from('assignment_submissions')
-    .update({ score: newScore })
+    .update(update)
     .eq('id', submissionId)
   if (error) console.error('updateSubmissionScore:', error)
   return !error
