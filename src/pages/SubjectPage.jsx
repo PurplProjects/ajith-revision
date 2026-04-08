@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { getSubject } from '../data/curriculum'
 import { startSession, endSession, fetchSubjectSubmissions, fetchVisitedTopics } from '../lib/db'
@@ -22,20 +22,16 @@ export default function SubjectPage() {
     fetchVisitedTopics().then(setVisited)
   }, [subjectId])
 
+  // Cleanup on unmount only
   useEffect(() => {
-    return () => stopSession()
-  }, [])
-
-  async function startTopicSession(topicId) {
-    stopSession()
-    const sid = await startSession(subjectId, topicId)
-    sessionIdRef.current = sid
-    startTimeRef.current = Date.now()
-    setElapsed(0)
-    intervalRef.current = setInterval(() => {
-      setElapsed(Math.floor((Date.now() - startTimeRef.current) / 1000))
-    }, 1000)
-  }
+    return () => {
+      clearInterval(intervalRef.current)
+      if (sessionIdRef.current && startTimeRef.current) {
+        const duration = Math.floor((Date.now() - startTimeRef.current) / 1000)
+        endSession(sessionIdRef.current, duration)
+      }
+    }
+  }, []) // empty array is correct — refs don't need to be deps
 
   function stopSession() {
     clearInterval(intervalRef.current)
@@ -46,6 +42,18 @@ export default function SubjectPage() {
       sessionIdRef.current = null
       startTimeRef.current = null
     }
+    setElapsed(0)
+  }
+
+  async function startTopicSession(topicId) {
+    stopSession()
+    const sid = await startSession(subjectId, topicId)
+    sessionIdRef.current = sid
+    startTimeRef.current = Date.now()
+    setElapsed(0)
+    intervalRef.current = setInterval(() => {
+      setElapsed(Math.floor((Date.now() - startTimeRef.current) / 1000))
+    }, 1000)
   }
 
   async function toggleTopic(topic) {
