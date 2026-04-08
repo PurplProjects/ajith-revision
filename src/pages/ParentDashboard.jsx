@@ -47,26 +47,24 @@ export default function ParentDashboard() {
     setSaving(true)
     const { submission, questions } = reviewData
 
-    // Count MC correct answers
     const mcCorrect = questions
       .filter(q => q.type === 'multiple_choice')
       .filter(q => submission.answers?.[q.id] === q.correct_index).length
 
-    // Count SA answers marked correct by parent
     const saCorrect = Object.values(saGrades).filter(v => v === 'correct').length
-
     const newScore = mcCorrect + saCorrect
+    const newTotal = questions.length  // denominator = all questions shown
 
-    const ok = await updateSubmissionScore(submission.id, newScore)
+    const ok = await updateSubmissionScore(submission.id, newScore, newTotal)
     if (ok) {
-      // Update local state
       setSubmissions(prev => prev.map(s =>
-        s.id === submission.id ? { ...s, score: newScore } : s
+        s.id === submission.id ? { ...s, score: newScore, mc_total: newTotal } : s
       ))
-      setReviewData(prev => ({
-        ...prev,
-        submission: { ...prev.submission, score: newScore }
-      }))
+      // Close review and go back to tests list
+      setReviewId(null)
+      setReviewData(null)
+      setSaGrades({})
+      setTab('tests')
     }
     setSaving(false)
   }
@@ -397,7 +395,8 @@ export default function ParentDashboard() {
             {submissions.length === 0 && <p className="text-gray-400 text-center py-10">No tests completed yet</p>}
             {submissions.map(s => {
               const sub = SUBJECTS.find(x => x.id === s.subject_id)
-              const pct = s.mc_total > 0 ? Math.round((s.score / s.mc_total) * 100) : null
+              const total = s.mc_total > 0 ? s.mc_total : 10
+              const pct = Math.min(100, Math.round((s.score / total) * 100))
               return (
                 <div key={s.id} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex items-center gap-3">
                   <span className="text-2xl">{sub?.icon}</span>
@@ -411,7 +410,7 @@ export default function ParentDashboard() {
                   {pct !== null && (
                     <div className="text-right mr-3">
                       <div className="text-xl font-bold" style={{ color: sub?.color }}>{pct}%</div>
-                      <div className="text-xs text-gray-400">{s.score}/{s.mc_total}</div>
+                      <div className="text-xs text-gray-400">{s.score}/{total}</div>
                     </div>
                   )}
                   <button
