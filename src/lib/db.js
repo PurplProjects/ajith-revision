@@ -1,31 +1,50 @@
 import { supabase, STUDENT_ID } from './supabase'
-import { SUBJECTS, getAllQuestions } from '../data/curriculum'
+import { getAllQuestions } from '../data/curriculum'
 
-// ─── Seed questions on first load ─────────────────────────────────────────────
+// ─── Seed questions — checks per subject so new subjects can be added ─────────
+// This means adding CS questions won't affect Ajith's existing progress at all
 export async function seedQuestionsIfNeeded() {
-  const { count } = await supabase
+  const { data: existingSubjects } = await supabase
     .from('questions')
-    .select('*', { count: 'exact', head: true })
+    .select('subject_id')
 
-  if (count > 0) return
+  const seededSubjectIds = new Set((existingSubjects ?? []).map(q => q.subject_id))
 
-  const questions = getAllQuestions().map(q => ({
-    id:            q.id,
-    subject_id:    q.subject_id,
-    subject_name:  q.subject_name,
-    topic:         q.topic,
-    difficulty:    q.difficulty,
-    type:          q.type,
-    question:      q.question,
-    options:       q.options ?? null,
-    correct_index: q.correct_index ?? null,
-    explanation:   q.explanation ?? null,
-    extract:       q.extract ?? null,
-    placeholder:   q.placeholder ?? null,
-  }))
+  const allQuestions = getAllQuestions()
 
-  for (let i = 0; i < questions.length; i += 100) {
-    await supabase.from('questions').insert(questions.slice(i, i + 100))
+  // Group questions by subject
+  const bySubject = {}
+  for (const q of allQuestions) {
+    if (!bySubject[q.subject_id]) bySubject[q.subject_id] = []
+    bySubject[q.subject_id].push(q)
+  }
+
+  // Only insert questions for subjects not already in the database
+  for (const [subjectId, questions] of Object.entries(bySubject)) {
+    if (seededSubjectIds.has(subjectId)) continue  // already seeded — skip
+
+    const rows = questions.map(q => ({
+      id:            q.id,
+      subject_id:    q.subject_id,
+      subject_name:  q.subject_name,
+      topic:         q.topic,
+      difficulty:    q.difficulty,
+      type:          q.type,
+      question:      q.question,
+      options:       q.options ?? null,
+      correct_index: q.correct_index ?? null,
+      explanation:   q.explanation ?? null,
+      extract:       q.extract ?? null,
+      placeholder:   q.placeholder ?? null,
+    }))
+
+    // Insert in batches of 100
+    for (let i = 0; i < rows.length; i += 100) {
+      const { error } = await supabase.from('questions').insert(rows.slice(i, i + 100))
+      if (error) console.error(`Seeding error for ${subjectId}:`, error)
+    }
+
+    console.log(`Seeded ${rows.length} questions for ${subjectId}`)
   }
 }
 
@@ -127,7 +146,7 @@ export async function saveSubmission({ subjectId, subjectName, attemptNumber, qu
   return !error
 }
 
-// ─── Update short answer score (parent grading) ───────────────────────────────
+// ─── Update submission score (parent grading) ─────────────────────────────────
 export async function updateSubmissionScore(submissionId, newScore, newTotal) {
   const update = { score: newScore }
   if (newTotal !== undefined) update.mc_total = newTotal
@@ -157,7 +176,6 @@ export async function fetchSubmissionWithQuestions(submissionId) {
     .select('*')
     .in('id', questionIds)
 
-  // Preserve order from questions_shown
   const qMap = {}
   for (const q of questions ?? []) qMap[q.id] = q
   const orderedQuestions = questionIds.map(id => qMap[id]).filter(Boolean)
