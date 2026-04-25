@@ -105,7 +105,7 @@ function ResourceLink({ resource }) {
 }
 
 // ── Main RevisionPanel ─────────────────────────────────────────────────────
-export default function RevisionPanel({ revision, subjectColor }) {
+export default function RevisionPanel({ revision, subjectColor, teacher }) {
   const [activeTopicId, setActiveTopicId] = useState(null)
   const [section, setSection] = useState('topics') // topics | formulas | resources
 
@@ -137,7 +137,9 @@ export default function RevisionPanel({ revision, subjectColor }) {
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex gap-3">
           <span className="text-xl">👨‍🏫</span>
           <div>
-            <p className="text-xs font-semibold text-amber-800">{revision.teacherNote.teacher}</p>
+            <p className="text-xs font-semibold text-amber-800">
+              {teacher?.name ?? revision.teacherNote.teacher ?? 'Your teacher'}
+            </p>
             <p className="text-xs text-amber-700 mt-1">{revision.teacherNote.message}</p>
           </div>
         </div>
