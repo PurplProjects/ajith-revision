@@ -7,6 +7,7 @@ import RevisionPanel from '../components/RevisionPanel'
 // Add new subjects here as revision content is built
 const revisionModules = {
   physics: () => import('../data/revision/physics.js').then(m => m.physicsRevision),
+  mandarin: () => import('../data/revision/mandarin.js').then(m => m.mandarinRevision),
   cs:      () => import('../data/revision/cs.js').then(m => m.csRevision),
 }
 
