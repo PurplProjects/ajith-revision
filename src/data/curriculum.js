@@ -445,7 +445,68 @@ export const SUBJECTS = [
     color: '#2563EB', bgColor: '#EFF6FF', textColor: '#1E3A8A',
     description: 'Internet, data, programming and binary',
     topics: [
-      ...all the topics...
+      { id: 'cs-internet', title: 'The Internet & Search Engines', content: [
+        { heading: 'The Internet', points: [
+          'The internet is a worldwide network connecting billions of devices.',
+          'Networks are the main way computers communicate with each other.',
+          'Uses: researching, gaming, contacting people, shopping, streaming.',
+          'A search engine is software that finds and returns information based on a query.',
+          'Examples: Google, Bing, DuckDuckGo.',
+        ]},
+        { heading: 'Search techniques', points: [
+          'Keywords: use specific terms — e.g. "Olympic sports 2024" not just "sports".',
+          'Exact phrase: put in quotes — e.g. "Computers are useless".',
+          'Exclude words: use minus — e.g. Glastonbury -festival.',
+          'These operators also work on eBay, Amazon and other sites.',
+        ]},
+      ], tip: 'Practice searching the same topic three ways: broad keyword, exact phrase, with exclusion. Compare the results.' },
+      { id: 'cs-websites', title: 'Evaluating Websites', content: [
+        { heading: 'Checking reliability', points: [
+          'Not everything online is accurate — anyone can publish anything.',
+          'Check: Who wrote it? When? Do other reliable sites agree?',
+          'BBC is reliable because it has editorial standards and accountability.',
+          'Google results are ranked by popularity, not accuracy.',
+          'Primary source: original data (e.g. official statistics). Secondary: article about that data.',
+        ]},
+      ], tip: 'Find the same fact on three different websites and compare — are they consistent? Which source is most reliable?' },
+      { id: 'cs-safety', title: 'Online Safety & Cyberbullying', content: [
+        { heading: 'Staying safe online', points: [
+          'Cyberbullying includes: threats, rumours, identity theft, harmful posts.',
+          'If bullied online: don\'t reply, block, keep evidence, tell someone, use report button.',
+          'Never share: full name, address, phone number, school, passwords.',
+          'Your digital footprint is permanent — think before you post.',
+        ]},
+      ], tip: 'Write down the 5 steps to take if you experience cyberbullying from memory.' },
+      { id: 'cs-data-types', title: 'Data Types', content: [
+        { heading: 'Core data types', points: [
+          'Character: a single symbol — letter (A), number (6) or symbol (£).',
+          'String: a collection of characters in speech marks — e.g. "Brentwood".',
+          'Integer: a whole number — no decimals or fractions — e.g. 12, -3, 0.',
+          'Float: a decimal number — e.g. 3.14, 9.99.',
+          'Boolean: only two values — True or False.',
+          'Data type matters: "5"+"3" = "53" (string) but 5+3 = 8 (integer).',
+        ]},
+      ], tip: 'For each data type, think of a real-world example of when you\'d use it in a program.' },
+      { id: 'cs-microbit', title: 'Micro:bit Programming', content: [
+        { heading: 'Key programming concepts', points: [
+          'Forever loop: repeats code continuously — used for thermometer and compass.',
+          'Variable: a named storage that holds a changing value — e.g. "degrees".',
+          'If/else: makes decisions — IF condition is true, do X, ELSE do Y.',
+          'Show number: displays a number on the LED display.',
+          'Show string: displays text (a string) on the LED display.',
+          'Compass code: sets "degrees" to heading, checks if < 45 → show N, < 135 → show E etc.',
+        ]},
+      ], tip: 'Go to makecode.microbit.org and try to recreate the compass program from memory.' },
+      { id: 'cs-binary', title: 'Binary Numbers', content: [
+        { heading: 'Binary basics', points: [
+          'Binary uses only 0 and 1 — maps to OFF/ON in computer circuits.',
+          'Column values (right to left): 1, 2, 4, 8, 16, 32, 64, 128.',
+          'To convert binary to decimal: add up the column values where there is a 1.',
+          'To convert decimal to binary: subtract the largest column that fits, place a 1, repeat.',
+          '1 bit = single 0 or 1. 1 byte = 8 bits. Max value of 1 byte = 255.',
+          'Example: 00001010 = 8 + 2 = 10.',
+        ]},
+      ], tip: 'Convert these to decimal: 00000111, 00010001, 00101010. Then convert 25 and 42 to binary.' },
     ],
   },
 ]
