@@ -4,9 +4,10 @@ import { getSubject } from '../data/curriculum'
 import { startSession, endSession, fetchSubjectSubmissions, fetchVisitedTopics } from '../lib/db'
 import RevisionPanel from '../components/RevisionPanel'
 
-// Import revision content — add more subjects here as they are built
+// Add new subjects here as revision content is built
 const revisionModules = {
   physics: () => import('../data/revision/physics.js').then(m => m.physicsRevision),
+  cs:      () => import('../data/revision/cs.js').then(m => m.csRevision),
 }
 
 export default function SubjectPage() {
@@ -14,7 +15,7 @@ export default function SubjectPage() {
   const navigate = useNavigate()
   const subject = getSubject(subjectId)
 
-  const [tab, setTab] = useState('notes') // notes | revision
+  const [tab, setTab] = useState('notes')
   const [openTopic, setOpenTopic] = useState(null)
   const [submissions, setSubmissions] = useState([])
   const [visited, setVisited] = useState(new Set())
@@ -27,10 +28,10 @@ export default function SubjectPage() {
 
   useEffect(() => {
     if (!subject) return
+    setTab('notes')
+    setRevisionData(null)
     fetchSubjectSubmissions(subjectId).then(setSubmissions)
     fetchVisitedTopics().then(setVisited)
-
-    // Load revision content if available
     if (revisionModules[subjectId]) {
       revisionModules[subjectId]().then(setRevisionData)
     }
@@ -93,7 +94,6 @@ export default function SubjectPage() {
 
   return (
     <div>
-      {/* Header */}
       <div className="flex items-center gap-3 mb-5">
         <button onClick={() => { stopSession(); navigate('/') }} className="text-gray-400 hover:text-gray-600">←</button>
         <span className="text-3xl">{subject.icon}</span>
@@ -109,7 +109,6 @@ export default function SubjectPage() {
         </div>
       </div>
 
-      {/* Tabs */}
       <div className="flex gap-2 mb-5">
         <button
           onClick={() => setTab('notes')}
@@ -136,7 +135,6 @@ export default function SubjectPage() {
         </button>
       </div>
 
-      {/* NOTES TAB */}
       {tab === 'notes' && (
         <div className="space-y-3">
           {subject.topics.map(topic => (
@@ -156,7 +154,6 @@ export default function SubjectPage() {
                   <span className="text-gray-400 text-sm">{openTopic === topic.id ? '▲' : '▼'}</span>
                 </div>
               </button>
-
               {openTopic === topic.id && (
                 <div className="px-4 pb-4 border-t border-gray-100">
                   {topic.content.map((section, i) => (
@@ -182,8 +179,6 @@ export default function SubjectPage() {
               )}
             </div>
           ))}
-
-          {/* Test CTA at bottom of notes */}
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 text-center mt-2">
             <h3 className="font-bold text-gray-800 text-lg mb-1">Ready to test yourself?</h3>
             <p className="text-sm text-gray-500 mb-4">10 questions — mix of difficulty levels — instant results</p>
@@ -201,7 +196,6 @@ export default function SubjectPage() {
         </div>
       )}
 
-      {/* REVISION TAB */}
       {tab === 'revision' && (
         <RevisionPanel revision={revisionData} subjectColor={subject.color} />
       )}
