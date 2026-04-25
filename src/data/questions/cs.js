@@ -79,28 +79,10 @@ export const csQuestions = [
   {id:'cs-067',subject_id:'cs',subject_name:'Computer Science',topic:'Binary Numbers',difficulty:'stretch',type:'short_answer',question:'Explain why computers use binary rather than the decimal system we use every day. What physical property of computers makes binary the natural choice?',placeholder:'Transistors have two states: on/off mapping to 1/0. Decimal would require 10 voltage levels which is impractical. Binary is simple, reliable and less prone to errors in electrical circuits...'},
 
   // ── COMPUTATIONAL THINKING ─────────────────────────────────────────────────
-  {id:'cs-068',subject_id:'cs',subject_name:'Computer Science',topic:'Micro:bit Programming',difficulty:'foundation',type:'short_answer',question:'The following program should display "HELLO" when button A is pressed, but it does nothing. Spot the bug and explain how to fix it:
-
-forever {
-  show string "HELLO"
-}',placeholder:'Bug: the code runs forever showing HELLO without waiting for a button press. Fix: remove the forever block and put the show string inside an "on button A pressed" event block instead...'},
-  {id:'cs-069',subject_id:'cs',subject_name:'Computer Science',topic:'Micro:bit Programming',difficulty:'foundation',type:'short_answer',question:'Write the pseudocode for a Micro:bit program that: when button A is pressed, shows the number 1; when button B is pressed, shows the number 2.',placeholder:'on button A pressed { show number 1 }
-on button B pressed { show number 2 }
-— No forever loop needed as these are event-driven...'},
-  {id:'cs-070',subject_id:'cs',subject_name:'Computer Science',topic:'Micro:bit Programming',difficulty:'core',type:'short_answer',question:'This thermometer code has a bug — it only shows the temperature once and then stops:
-
-on start {
-  show number temperature(°C)
-}
-
-What is wrong and how do you fix it?',placeholder:'Bug: "on start" only runs once when the Micro:bit turns on. Fix: replace "on start" with a "forever" block so the temperature is continuously read and displayed...'},
-  {id:'cs-071',subject_id:'cs',subject_name:'Computer Science',topic:'Micro:bit Programming',difficulty:'core',type:'short_answer',question:'Write pseudocode for a Micro:bit program that counts from 1 to 5, displaying each number for 1 second, then displays "DONE".',placeholder:'on start {
-  for i from 1 to 5 {
-    show number i
-    pause 1000ms
-  }
-  show string "DONE"
-}'},
+  {id:'cs-068',subject_id:'cs',subject_name:'Computer Science',topic:'Micro:bit Programming',difficulty:'foundation',type:'short_answer',question:'The following program should display "HELLO" when button A is pressed, but it does nothing. Spot the bug and explain how to fix it:  forever {   show string "HELLO" }',placeholder:'Bug: the code runs forever showing HELLO without waiting for a button press. Fix: remove the forever block and put the show string inside an "on button A pressed" event block instead...'},
+  {id:'cs-069',subject_id:'cs',subject_name:'Computer Science',topic:'Micro:bit Programming',difficulty:'foundation',type:'short_answer',question:'Write the pseudocode for a Micro:bit program that: when button A is pressed, shows the number 1; when button B is pressed, shows the number 2.',placeholder:'on button A pressed { show number 1 } on button B pressed { show number 2 } — No forever loop needed as these are event-driven...'},
+  {id:'cs-070',subject_id:'cs',subject_name:'Computer Science',topic:'Micro:bit Programming',difficulty:'core',type:'short_answer',question:'This thermometer code has a bug — it only shows the temperature once and then stops:  on start {   show number temperature(°C) }  What is wrong and how do you fix it?',placeholder:'Bug: "on start" only runs once when the Micro:bit turns on. Fix: replace "on start" with a "forever" block so the temperature is continuously read and displayed...'},
+  {id:'cs-071',subject_id:'cs',subject_name:'Computer Science',topic:'Micro:bit Programming',difficulty:'core',type:'short_answer',question:'Write pseudocode for a Micro:bit program that counts from 1 to 5, displaying each number for 1 second, then displays "DONE".',placeholder:'on start {   for i from 1 to 5 {     show number i     pause 1000ms   }   show string "DONE" }'},
 
   // ── ADDITIONAL MIXED QUESTIONS ─────────────────────────────────────────────
   {id:'cs-072',subject_id:'cs',subject_name:'Computer Science',topic:'Data Types',difficulty:'foundation',type:'multiple_choice',question:'Which of these is a string?',options:['42','True','"Hello World"','3.14'],correct_index:2,explanation:'"Hello World" is a string — it is text enclosed in speech marks. 42 is an integer, True is a Boolean, 3.14 is a float.'},
@@ -109,73 +91,27 @@ What is wrong and how do you fix it?',placeholder:'Bug: "on start" only runs onc
   {id:'cs-075',subject_id:'cs',subject_name:'Computer Science',topic:'Binary Numbers',difficulty:'foundation',type:'multiple_choice',question:'What is binary 00001000 in decimal?',options:['4','6','8','16'],correct_index:2,explanation:'Only the 8-column has a 1. 00001000 = 8 in decimal.'},
   {id:'cs-076',subject_id:'cs',subject_name:'Computer Science',topic:'Micro:bit Programming',difficulty:'foundation',type:'multiple_choice',question:'What does "else" mean in an if/else statement?',options:['Run this code always','Run this code if the if condition is FALSE','Skip this code','Repeat the if condition'],correct_index:1,explanation:'"Else" provides an alternative — it runs when the "if" condition is NOT true. Together they cover both possible outcomes of a condition check.'},
   {id:'cs-077',subject_id:'cs',subject_name:'Computer Science',topic:'Micro:bit Programming',difficulty:'core',type:'multiple_choice',question:'In programming, what does "else if" allow you to do?',options:['Check only one condition','Check a second condition if the first was false','Always run its code block','End the program'],correct_index:1,explanation:'"Else if" lets you chain multiple conditions — if the first is false, check a second, then a third etc. This is how the Micro:bit compass checks all four directions in sequence.'},
-  {id:'cs-078',subject_id:'cs',subject_name:'Computer Science',topic:'Micro:bit Programming',difficulty:'core',type:'short_answer',question:'The compass program below shows "N" for ALL directions, not just north. Find the two bugs and explain how to fix them:
-
-forever {
-  set degrees = compass heading
-  if degrees < 45 {
-    show string "N"
-  }
-  if degrees < 135 {
-    show string "E"
-  }
-}',placeholder:'Bug 1: using "if" instead of "else if" — every condition is checked independently, so if degrees=10, it shows N then immediately checks < 135 and shows E. Bug 2: missing S and W conditions. Fix: use else if chain and add all four directions...'},
-  {id:'cs-079',subject_id:'cs',subject_name:'Computer Science',topic:'Micro:bit Programming',difficulty:'core',type:'short_answer',question:'Write pseudocode for a simple quiz program on the Micro:bit: show the question "5+3=?", wait for button A (answer 8) or button B (answer 9). If A is pressed show a tick, if B show a cross.',placeholder:'show string "5+3=?"
-on button A pressed { show icon tick }
-on button B pressed { show icon cross }
-— Explain why this is event-driven rather than using if/else in a loop...'},
+  {id:'cs-078',subject_id:'cs',subject_name:'Computer Science',topic:'Micro:bit Programming',difficulty:'core',type:'short_answer',question:'The compass program below shows "N" for ALL directions, not just north. Find the two bugs and explain how to fix them:  forever {   set degrees = compass heading   if degrees < 45 {     show string "N"   }   if degrees < 135 {     show string "E"   } }',placeholder:'Bug 1: using "if" instead of "else if" — every condition is checked independently, so if degrees=10, it shows N then immediately checks < 135 and shows E. Bug 2: missing S and W conditions. Fix: use else if chain and add all four directions...'},
+  {id:'cs-079',subject_id:'cs',subject_name:'Computer Science',topic:'Micro:bit Programming',difficulty:'core',type:'short_answer',question:'Write pseudocode for a simple quiz program on the Micro:bit: show the question "5+3=?", wait for button A (answer 8) or button B (answer 9). If A is pressed show a tick, if B show a cross.',placeholder:'show string "5+3=?" on button A pressed { show icon tick } on button B pressed { show icon cross } — Explain why this is event-driven rather than using if/else in a loop...'},
   {id:'cs-080',subject_id:'cs',subject_name:'Computer Science',topic:'Binary Numbers',difficulty:'core',type:'multiple_choice',question:'What is binary 00010000 in decimal?',options:['8','12','16','32'],correct_index:2,explanation:'Only the 16-column has a 1. 00010000 = 16 in decimal.'},
   {id:'cs-081',subject_id:'cs',subject_name:'Computer Science',topic:'Data Types',difficulty:'stretch',type:'multiple_choice',question:'Which data type would be most appropriate for storing a product price like £9.99?',options:['Integer — it is a number','Boolean — it is a yes/no value','Float — it has a decimal point','String — it has a £ symbol'],correct_index:2,explanation:'£9.99 has a decimal point so it should be stored as a float. An integer would lose the .99. The £ symbol is part of formatting, not the stored value.'},
   {id:'cs-082',subject_id:'cs',subject_name:'Computer Science',topic:'Micro:bit Programming',difficulty:'core',type:'multiple_choice',question:'A student writes this code: set score = "0". Later they write: set score = score + 1. What error will occur?',options:['No error — it will work fine','A type error — you cannot add 1 to a string','The score will display as "01"','The Micro:bit will crash completely'],correct_index:1,explanation:'score is stored as a string "0" not an integer 0. Adding 1 to a string causes a type error in most languages, or gives "01" through concatenation. Always use the correct data type from the start.'},
-  {id:'cs-083',subject_id:'cs',subject_name:'Computer Science',topic:'Micro:bit Programming',difficulty:'stretch',type:'short_answer',question:'Spot THREE bugs in this pseudocode and explain how to fix each:
-
-set temp = 0
-if temp < 15
-  show string COLD
-else if temp > 15
-  show string WARM
-else if temp > 25
-  show string HOT',placeholder:'Bug 1: temp is always 0 — should be set temp = temperature(°C) inside a forever loop. Bug 2: missing quotes around COLD/WARM/HOT — should be "COLD" etc. Bug 3: logic error — WARM condition (>15) will always trigger before HOT (>25) — fix: check HOT first (>25), then WARM (>15), else COLD...'},
+  {id:'cs-083',subject_id:'cs',subject_name:'Computer Science',topic:'Micro:bit Programming',difficulty:'stretch',type:'short_answer',question:'Spot THREE bugs in this pseudocode and explain how to fix each:  set temp = 0 if temp < 15   show string COLD else if temp > 15   show string WARM else if temp > 25   show string HOT',placeholder:'Bug 1: temp is always 0 — should be set temp = temperature(°C) inside a forever loop. Bug 2: missing quotes around COLD/WARM/HOT — should be "COLD" etc. Bug 3: logic error — WARM condition (>15) will always trigger before HOT (>25) — fix: check HOT first (>25), then WARM (>15), else COLD...'},
   {id:'cs-084',subject_id:'cs',subject_name:'Computer Science',topic:'Online Safety & Cyberbullying',difficulty:'foundation',type:'multiple_choice',question:'What is a "Report" button on social media used for?',options:['To report good content you like','To flag harmful, inappropriate or abusive content to the platform','To share content with friends','To save content for later'],correct_index:1,explanation:'Most social media platforms have a Report button that lets you flag content or behaviour that violates their rules. Platforms review reports and can remove content or ban users.'},
-  {id:'cs-085',subject_id:'cs',subject_name:'Computer Science',topic:'Micro:bit Programming',difficulty:'stretch',type:'short_answer',question:'Write pseudocode for a Micro:bit step counter. Each time the Micro:bit is shaken, add 1 to a steps variable. Display the steps count. When button A is pressed, reset the count to 0.',placeholder:'set steps = 0
-on shake { set steps = steps + 1. show number steps }
-on button A pressed { set steps = 0. show number 0 }
-— Explain: shake is an input event, steps is a variable that persists between events...'},
+  {id:'cs-085',subject_id:'cs',subject_name:'Computer Science',topic:'Micro:bit Programming',difficulty:'stretch',type:'short_answer',question:'Write pseudocode for a Micro:bit step counter. Each time the Micro:bit is shaken, add 1 to a steps variable. Display the steps count. When button A is pressed, reset the count to 0.',placeholder:'set steps = 0 on shake { set steps = steps + 1. show number steps } on button A pressed { set steps = 0. show number 0 } — Explain: shake is an input event, steps is a variable that persists between events...'},
   {id:'cs-086',subject_id:'cs',subject_name:'Computer Science',topic:'Micro:bit Programming',difficulty:'stretch',type:'short_answer',question:'Write pseudocode for a Micro:bit program that: displays "COLD" if temperature is below 15°C, "WARM" if between 15 and 25°C, and "HOT" if above 25°C.',placeholder:'forever { set temp = temperature(°C). if temp < 15 { show string "COLD" } else if temp < 25 { show string "WARM" } else { show string "HOT" } }...'},
   {id:'cs-087',subject_id:'cs',subject_name:'Computer Science',topic:'Data Types',difficulty:'core',type:'short_answer',question:'Explain the difference between a character and a string. Give an example of each and explain how they are stored differently.',placeholder:'Character: single symbol e.g. "A". String: sequence of characters e.g. "Ajith". String is stored as an array/sequence of characters in memory. One character = one unit; string = multiple units...'},
   {id:'cs-088',subject_id:'cs',subject_name:'Computer Science',topic:'Binary Numbers',difficulty:'core',type:'multiple_choice',question:'Binary 00000010 in decimal is?',options:['1','2','4','8'],correct_index:1,explanation:'Only the 2-column has a 1. 00000010 = 2 in decimal.'},
   {id:'cs-089',subject_id:'cs',subject_name:'Computer Science',topic:'Binary Numbers',difficulty:'core',type:'multiple_choice',question:'What is decimal 7 in binary (8 bits)?',options:['00000111','00001000','00000110','00001110'],correct_index:0,explanation:'7 = 4+2+1. Place 1s in the 4, 2 and 1 columns: 00000111.'},
   {id:'cs-090',subject_id:'cs',subject_name:'Computer Science',topic:'Binary Numbers',difficulty:'stretch',type:'multiple_choice',question:'What is decimal 128 in binary (8 bits)?',options:['01111111','10000000','11000000','10000001'],correct_index:1,explanation:'128 is exactly the leftmost column in an 8-bit number. Only that column gets a 1: 10000000.'},
   {id:'cs-091',subject_id:'cs',subject_name:'Computer Science',topic:'Evaluating Websites',difficulty:'core',type:'short_answer',question:'A student finds a health website claiming a new fruit cures cancer. List four questions they should ask to evaluate whether this source is trustworthy.',placeholder:'Who wrote it? Are they medically qualified? Is it dated? Do reputable medical sites (NHS, WHO) agree? Is the site trying to sell something? Are sources cited?...'},
-  {id:'cs-092',subject_id:'cs',subject_name:'Computer Science',topic:'Micro:bit Programming',difficulty:'stretch',type:'short_answer',question:'A student wants to make an LED flash on and off forever. They write:
-
-show LED on
-pause 500ms
-show LED off
-pause 500ms
-
-It flashes once and stops. What is missing? Rewrite the corrected pseudocode.',placeholder:'Missing: a forever loop wrapping all four lines. Corrected:
-forever {
-  show LED on
-  pause 500ms
-  show LED off
-  pause 500ms
-}
-Without forever, the code runs once from top to bottom then stops...'},
+  {id:'cs-092',subject_id:'cs',subject_name:'Computer Science',topic:'Micro:bit Programming',difficulty:'stretch',type:'short_answer',question:'A student wants to make an LED flash on and off forever. They write:  show LED on pause 500ms show LED off pause 500ms  It flashes once and stops. What is missing? Rewrite the corrected pseudocode.',placeholder:'Missing: a forever loop wrapping all four lines. Corrected: forever {   show LED on   pause 500ms   show LED off   pause 500ms } Without forever, the code runs once from top to bottom then stops...'},
   {id:'cs-093',subject_id:'cs',subject_name:'Computer Science',topic:'Micro:bit Programming',difficulty:'foundation',type:'multiple_choice',question:'In Micro:bit MakeCode, what category of block is the "forever" loop found in?',options:['Logic','Variables','Basic or Loops','Input'],correct_index:2,explanation:'The "forever" block is found in the "Basic" category in MakeCode. It is one of the most fundamental blocks — everything inside it runs continuously.'},
   {id:'cs-094',subject_id:'cs',subject_name:'Computer Science',topic:'Micro:bit Programming',difficulty:'stretch',type:'short_answer',question:'Explain what an "infinite loop" is. When is it useful (give an example from Ajith\'s Micro:bit work) and when is it a problem (give an example of when it would cause a bug)?',placeholder:'Infinite loop: a loop that never ends (e.g. forever block). Useful: thermometer — we want it to keep reading forever. Problem: if you put a one-off action (like showing a name) in a forever loop it repeats when it should only run once, causing flickering or unexpected behaviour...'},
   {id:'cs-095',subject_id:'cs',subject_name:'Computer Science',topic:'Data Types',difficulty:'foundation',type:'multiple_choice',question:'Which of these is a Boolean value?',options:['"true"','True','1.0','100'],correct_index:1,explanation:'"True" (without quotes) is a Boolean — one of only two Boolean values (True/False). "true" in quotes would be a string. 1.0 is a float. 100 is an integer.'},
   {id:'cs-096',subject_id:'cs',subject_name:'Computer Science',topic:'Binary Numbers',difficulty:'core',type:'multiple_choice',question:'What is decimal 15 in binary?',options:['00001110','00001010','00001111','00010000'],correct_index:2,explanation:'15 = 8+4+2+1. All four rightmost columns have a 1: 00001111.'},
   {id:'cs-097',subject_id:'cs',subject_name:'Computer Science',topic:'Micro:bit Programming',difficulty:'core',type:'short_answer',question:'What is the difference between an input and an output on a Micro:bit? Give two examples of each.',placeholder:'Input: data going IN to the Micro:bit — e.g. button press, temperature sensor, compass reading. Output: data going OUT — e.g. LED display, sound (buzzer), Bluetooth signal...'},
   {id:'cs-098',subject_id:'cs',subject_name:'Computer Science',topic:'Online Safety & Cyberbullying',difficulty:'core',type:'multiple_choice',question:'What does HTTPS at the start of a web address mean?',options:['The website is always accurate','The website uses encryption to protect data sent between your browser and the server','The website is owned by the government','The website is the most popular in its category'],correct_index:1,explanation:'HTTPS (HyperText Transfer Protocol Secure) means the connection between your browser and the website is encrypted — data is protected in transit. Always check for HTTPS when entering personal information.'},
-  {id:'cs-099',subject_id:'cs',subject_name:'Computer Science',topic:'Data Types',difficulty:'stretch',type:'short_answer',question:'A Micro:bit program asks the user for their age using input. The user types "twelve". Write pseudocode showing: (a) how this causes a bug, (b) how you would validate the input to prevent it.',placeholder:'(a) set age = input → age = "twelve" (string). age + 1 causes type error.
-(b) Validation: check if input is a number before using it. If not a number, show "Error: enter a number" and ask again. This is called input validation...'},
-  {id:'cs-100',subject_id:'cs',subject_name:'Computer Science',topic:'Micro:bit Programming',difficulty:'stretch',type:'short_answer',question:'Write pseudocode for a "hot or cold" treasure hunt game on the Micro:bit. The program should: store a secret number (1-9), ask the user to guess by pressing A (guess up) or B (guess down), and display HOT if within 2, COLD if more than 2 away.',placeholder:'set secret = 5. set guess = 1.
-forever {
-  show number guess
-  on button A: set guess = guess + 1
-  on button B: set guess = guess - 1
-  if abs(guess - secret) <= 2 { show string "HOT" }
-  else { show string "COLD" }
-}'},
+  {id:'cs-099',subject_id:'cs',subject_name:'Computer Science',topic:'Data Types',difficulty:'stretch',type:'short_answer',question:'A Micro:bit program asks the user for their age using input. The user types "twelve". Write pseudocode showing: (a) how this causes a bug, (b) how you would validate the input to prevent it.',placeholder:'(a) set age = input → age = "twelve" (string). age + 1 causes type error. (b) Validation: check if input is a number before using it. If not a number, show "Error: enter a number" and ask again. This is called input validation...'},
+  {id:'cs-100',subject_id:'cs',subject_name:'Computer Science',topic:'Micro:bit Programming',difficulty:'stretch',type:'short_answer',question:'Write pseudocode for a "hot or cold" treasure hunt game on the Micro:bit. The program should: store a secret number (1-9), ask the user to guess by pressing A (guess up) or B (guess down), and display HOT if within 2, COLD if more than 2 away.',placeholder:'set secret = 5. set guess = 1. forever {   show number guess   on button A: set guess = guess + 1   on button B: set guess = guess - 1   if abs(guess - secret) <= 2 { show string "HOT" }   else { show string "COLD" } }'},
 ]
