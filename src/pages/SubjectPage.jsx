@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { getSubject } from '../data/curriculum'
-import { startSession, endSession, fetchSubjectSubmissions, fetchVisitedTopics } from '../lib/db'
+import { startSession, endSession, fetchSubjectSubmissions, fetchVisitedTopics, fetchStudentTeachers } from '../lib/db'
 import RevisionPanel from '../components/RevisionPanel'
 
 // Add new subjects here as revision content is built
@@ -23,6 +23,7 @@ export default function SubjectPage() {
   const [visited, setVisited] = useState(new Set())
   const [elapsed, setElapsed] = useState(0)
   const [revisionData, setRevisionData] = useState(null)
+  const [teachers, setTeachers] = useState({})
 
   const sessionIdRef = useRef(null)
   const startTimeRef = useRef(null)
@@ -37,6 +38,7 @@ export default function SubjectPage() {
     if (revisionModules[subjectId]) {
       revisionModules[subjectId]().then(setRevisionData)
     }
+    fetchStudentTeachers().then(setTeachers)
   }, [subjectId])
 
   useEffect(() => {
@@ -199,7 +201,7 @@ export default function SubjectPage() {
       )}
 
       {tab === 'revision' && (
-        <RevisionPanel revision={revisionData} subjectColor={subject.color} />
+        <RevisionPanel revision={revisionData} subjectColor={subject.color} teacher={teachers[subjectId]} />
       )}
     </div>
   )
