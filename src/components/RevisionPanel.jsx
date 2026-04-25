@@ -75,6 +75,23 @@ function FifaStep({ step, color }) {
 
 // ── Resource Link ──────────────────────────────────────────────────────────
 function ResourceLink({ resource }) {
+  const inner = (
+    <>
+      <span className="text-2xl flex-shrink-0">{resource.icon}</span>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-semibold text-gray-800 group-hover:text-indigo-700 transition">{resource.title}</p>
+        <p className="text-xs text-gray-500 mt-0.5">{resource.description}</p>
+      </div>
+      {resource.url && <span className="text-gray-300 group-hover:text-indigo-400 transition flex-shrink-0">↗</span>}
+    </>
+  )
+  if (!resource.url) {
+    return (
+      <div className="flex items-start gap-3 p-4 bg-amber-50 rounded-xl border border-amber-100 group">
+        {inner}
+      </div>
+    )
+  }
   return (
     <a
       href={resource.url}
@@ -82,12 +99,7 @@ function ResourceLink({ resource }) {
       rel="noopener noreferrer"
       className="flex items-start gap-3 p-4 bg-white rounded-xl border border-gray-100 hover:border-indigo-300 hover:shadow-sm transition group"
     >
-      <span className="text-2xl flex-shrink-0">{resource.icon}</span>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-gray-800 group-hover:text-indigo-700 transition">{resource.title}</p>
-        <p className="text-xs text-gray-500 mt-0.5">{resource.description}</p>
-      </div>
-      <span className="text-gray-300 group-hover:text-indigo-400 transition flex-shrink-0">↗</span>
+      {inner}
     </a>
   )
 }
@@ -103,6 +115,22 @@ export default function RevisionPanel({ revision, subjectColor }) {
 
   return (
     <div className="space-y-4">
+
+      {/* Exam info */}
+      {revision.examInfo && (
+        <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4">
+          <p className="text-xs font-bold text-indigo-800 mb-2">📅 End of Year Exam — 4 components (25% each)</p>
+          <div className="grid grid-cols-2 gap-2">
+            {revision.examInfo.components.map((c, i) => (
+              <div key={i} className="bg-white rounded-lg p-2 border border-indigo-100">
+                <p className="text-xs font-semibold text-indigo-700">{c.name} — {c.weight}</p>
+                <p className="text-xs text-indigo-500 font-medium">{c.date}</p>
+                <p className="text-xs text-gray-500 mt-0.5">{c.details}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Teacher note */}
       {revision.teacherNote && (
