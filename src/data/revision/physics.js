@@ -1,0 +1,157 @@
+export const physicsRevision = {
+  subjectId: 'physics',
+
+  // ── TEACHER NOTE ──────────────────────────────────────────────────────────
+  teacherNote: {
+    teacher: 'Mr M King — Director of Innovative Learning',
+    message: 'Ajith scored 72% in Work & Energy. Focus on selecting and applying formulas correctly using the FIFA technique. Electricity test coming up — prioritise Topic 3.',
+  },
+
+  // ── FORMULA REFERENCE ─────────────────────────────────────────────────────
+  formulas: [
+    { name: 'Speed', formula: 's = d ÷ t', words: 'Speed = Distance ÷ Time', units: 'm/s', rearrangements: ['d = s × t', 't = d ÷ s'], triangle: ['d', 's', 't'] },
+    { name: 'Work', formula: 'W = F × d', words: 'Work = Force × Distance', units: 'J (Joules)', rearrangements: ['F = W ÷ d', 'd = W ÷ F'], triangle: ['W', 'F', 'd'] },
+    { name: 'Weight', formula: 'W = m × g', words: 'Weight = Mass × Gravitational Field Strength', units: 'N (Newtons)', rearrangements: ['m = W ÷ g', 'g = W ÷ m'], triangle: ['W', 'm', 'g'] },
+    { name: 'Current', formula: 'I = Q ÷ t', words: 'Current = Charge ÷ Time', units: 'A (Amperes)', rearrangements: ['Q = I × t', 't = Q ÷ I'], triangle: ['Q', 'I', 't'] },
+  ],
+
+  // ── FIFA TECHNIQUE ────────────────────────────────────────────────────────
+  fifa: [
+    { letter: 'F', word: 'Find', description: 'Find the correct formula for the question' },
+    { letter: 'I', word: 'Insert', description: 'Insert the known values into the formula' },
+    { letter: 'F', word: 'Fine-tune', description: 'Fine-tune — rearrange the formula if you need to find a different variable' },
+    { letter: 'A', word: 'Answer', description: 'Write the Answer with correct units' },
+  ],
+
+  // ── FLASHCARD SETS BY TOPIC ───────────────────────────────────────────────
+  topics: [
+    {
+      id: 'working-scientifically',
+      title: 'Working Scientifically',
+      color: '#888780',
+      cgpRevision: '2–6',
+      cards: [
+        { q: 'What is a hypothesis?', a: 'A testable prediction about what you think will happen in an experiment, based on scientific knowledge.' },
+        { q: 'What is an independent variable?', a: 'The variable you deliberately change in an experiment.' },
+        { q: 'What is a dependent variable?', a: 'The variable you measure in response to the independent variable.' },
+        { q: 'What is a control variable?', a: 'A variable kept the same throughout the experiment to make it a fair test.' },
+        { q: 'What does "repeatable" mean?', a: 'The same experimenter gets the same results when repeating the experiment.' },
+        { q: 'What does "reproducible" mean?', a: 'Different experimenters get the same results using the same method.' },
+        { q: 'What is an anomalous result?', a: 'A result that does not fit the pattern of the other results — it may be caused by an error.' },
+        { q: 'What is the difference between accuracy and precision?', a: 'Accuracy: how close results are to the true value. Precision: how close repeated results are to each other.' },
+        { q: 'What type of graph do you use for continuous data?', a: 'A line graph — the x-axis variable is continuous (e.g. time, temperature).' },
+        { q: 'What is a line of best fit?', a: 'A straight or curved line drawn through the middle of the data points on a scatter graph, showing the overall trend.' },
+      ],
+    },
+    {
+      id: 'forces-motion',
+      title: 'Topic 1 — Forces and Motion',
+      color: '#D85A30',
+      cgpRevision: '36–48',
+      cgpWorkbook: '15–24',
+      scienceDoctor: '22–32',
+      cards: [
+        { q: 'What is speed?', a: 'The distance travelled per unit of time. Formula: s = d ÷ t. Units: m/s or km/h.' },
+        { q: 'A car travels 300 m in 15 s. What is its speed?', a: 's = d ÷ t = 300 ÷ 15 = 20 m/s', worked: true },
+        { q: 'What does a horizontal line on a distance-time graph mean?', a: 'The object is stationary — no distance is being covered over time.' },
+        { q: 'What does a steeper slope on a distance-time graph show?', a: 'Greater speed — more distance is covered in the same amount of time.' },
+        { q: 'What is a force?', a: 'A push or pull acting on an object, measured in Newtons (N).' },
+        { q: 'What are balanced forces?', a: 'Forces that are equal in size and opposite in direction — the object stays still or moves at constant speed.' },
+        { q: 'What are unbalanced forces?', a: 'Forces where one direction is greater — the object accelerates or decelerates.' },
+        { q: 'What is friction?', a: 'A force that opposes motion between two surfaces in contact. It acts in the opposite direction to movement.' },
+        { q: 'What is air resistance?', a: 'A type of friction between an object and the air. It increases with speed.' },
+        { q: 'What is terminal velocity?', a: 'When air resistance equals the weight of a falling object — it stops accelerating and falls at constant speed.' },
+        { q: 'What is a force diagram (free body diagram)?', a: 'A diagram showing all the forces acting on an object as arrows, with length showing magnitude and direction showing direction.' },
+        { q: 'What instrument measures force?', a: 'A newton meter (spring balance).' },
+      ],
+    },
+    {
+      id: 'work-energy',
+      title: 'Topic 2 — Work and Energy',
+      color: '#1D9E75',
+      cgpRevision: '7–54',
+      cgpWorkbook: '1–28',
+      scienceDoctor: '6–26',
+      badge: '72% ✓',
+      cards: [
+        { q: 'What is energy?', a: 'The ability to do work. Measured in Joules (J). Energy cannot be created or destroyed, only transferred.' },
+        { q: 'Name 6 energy stores.', a: 'Kinetic, Gravitational Potential, Chemical, Thermal, Elastic (Strain), Nuclear.' },
+        { q: 'What is kinetic energy?', a: 'Energy stored in a moving object. The faster and heavier the object, the more kinetic energy it has.' },
+        { q: 'What is gravitational potential energy (GPE)?', a: 'Energy stored in an object due to its height above the ground. Increases with height and mass.' },
+        { q: 'State the law of conservation of energy.', a: 'Energy cannot be created or destroyed — it can only be transferred from one store to another.' },
+        { q: 'What is work done?', a: 'Work is done when a force moves an object through a distance. Formula: W = F × d. Units: Joules (J).' },
+        { q: 'A force of 10 N moves an object 5 m. How much work is done?', a: 'W = F × d = 10 × 5 = 50 J', worked: true },
+        { q: 'What is useful energy?', a: 'Energy transferred to where it is wanted and in the form needed.' },
+        { q: 'What is wasted energy?', a: 'Energy transferred to stores that are not useful — most commonly as thermal (heat) energy.' },
+        { q: 'What is an elastic material?', a: 'A material that returns to its original shape after the force is removed (e.g. a spring).' },
+        { q: 'What is Hooke\'s Law?', a: 'The extension of a spring is directly proportional to the force applied — as long as the elastic limit is not exceeded.' },
+        { q: 'What happens beyond the elastic limit?', a: 'The material is permanently deformed and does not return to its original shape.' },
+      ],
+    },
+    {
+      id: 'electricity',
+      title: 'Topic 3 — Electricity',
+      color: '#7C3AED',
+      cgpRevision: '83–92',
+      cgpWorkbook: '58–65',
+      scienceDoctor: '60–70',
+      badge: '⚡ Test Tuesday!',
+      badgeColor: '#D85A30',
+      cards: [
+        { q: 'What is static electricity?', a: 'A build-up of electric charge on an insulating material, caused by friction transferring electrons from one material to another.' },
+        { q: 'What happens when two objects with the same charge are brought together?', a: 'They repel each other.' },
+        { q: 'What happens when two objects with opposite charges are brought together?', a: 'They attract each other.' },
+        { q: 'What is electric current?', a: 'The flow of electric charge (electrons) around a circuit. Formula: I = Q ÷ t. Measured in Amperes (A).' },
+        { q: 'What is voltage (potential difference)?', a: 'The energy transferred per unit of charge — the "push" driving current around the circuit. Measured in Volts (V).' },
+        { q: 'What is resistance?', a: 'A measure of how difficult it is for current to flow through a component. Measured in Ohms (Ω).' },
+        { q: 'State Ohm\'s Law.', a: 'Voltage = Current × Resistance. V = I × R.' },
+        { q: 'How do you connect an ammeter in a circuit?', a: 'In series — in line with the component you are measuring.' },
+        { q: 'How do you connect a voltmeter in a circuit?', a: 'In parallel — across (either side of) the component you are measuring.' },
+        { q: 'In a series circuit, what happens if one bulb breaks?', a: 'All components stop working — there is only one path for current to flow.' },
+        { q: 'In a parallel circuit, what happens if one bulb breaks?', a: 'The other components continue to work — each branch is an independent path.' },
+        { q: 'In a series circuit, how does adding more components affect current?', a: 'Current decreases — more components means more resistance.' },
+        { q: 'In a parallel circuit, how does voltage compare across each branch?', a: 'Voltage is the same across each branch — equal to the supply voltage.' },
+        { q: 'A current of 2A flows for 10s. How much charge is transferred?', a: 'Q = I × t = 2 × 10 = 20 C (Coulombs)', worked: true },
+      ],
+    },
+  ],
+
+  // ── RESOURCES ─────────────────────────────────────────────────────────────
+  resources: [
+    {
+      title: 'CGP KS3 Higher Level Complete Revision & Practice',
+      description: 'Recommended by Mr King — covers all Year 7 Physics topics with worked examples and practice questions.',
+      url: 'https://www.cgpbooks.co.uk/secondary-books/ks3/science/shs35-ks3-science-complete-revision-practice',
+      icon: '📘',
+      type: 'book',
+    },
+    {
+      title: 'Physics Topic 1 Checklist — Forces and Motion',
+      description: 'School revision checklist for Topic 1 with BBC Bitesize links and exam practice.',
+      url: 'https://docs.google.com/document/d/1HfJBTq_QInvFUGzQZX5fqG_1TDNUSIhqxZmG9acv5pM/edit?usp=sharing',
+      icon: '📋',
+      type: 'checklist',
+    },
+    {
+      title: 'Physics Topic 2 Checklist — Work and Energy',
+      description: 'School revision checklist for Topic 2. Ajith scored 72% here — good foundation to build on.',
+      url: 'https://docs.google.com/document/d/1BKd0w6Mg9806xPugtNZ-3In5QrAMHVCE6RA3GlXciL4/edit?usp=sharing',
+      icon: '📋',
+      type: 'checklist',
+    },
+    {
+      title: 'Physics Topic 3 Checklist — Electricity',
+      description: 'School revision checklist for Topic 3. Test on Tuesday — start here!',
+      url: 'https://docs.google.com/document/d/1Pm_QxmSpUf2GAvmiZXAz9BQKAu2frm3_ZK_kZaMVOMo/edit?usp=sharing',
+      icon: '📋',
+      type: 'checklist',
+    },
+    {
+      title: 'Physics Revision Action Plan',
+      description: 'Mr King\'s full revision action plan covering all three topics with page references for CGP and Science Doctor.',
+      url: 'https://docs.google.com/document/d/1k7kFRaFGucq-ZFFgFkAN6vYp-0qlMIdnSTpq6Oau5io/edit?usp=sharing',
+      icon: '🗂️',
+      type: 'checklist',
+    },
+  ],
+}
