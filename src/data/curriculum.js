@@ -11,6 +11,7 @@ import { geographyQuestions } from './questions/geography'
 import { spanishQuestions } from './questions/spanish'
 import { latinQuestions } from './questions/latin'
 import { mandarinQuestions } from './questions/mandarin'
+import { csQuestions } from './questions/cs'
 
 export const SUBJECTS = [
   {
@@ -439,6 +440,14 @@ export const SUBJECTS = [
       ], tip: 'Write 5 sentences about yourself in Pinyin: name, age, family, nationality, hobby.' },
     ],
   },
+  {
+    id: 'cs', name: 'Computer Science', icon: '💻',
+    color: '#2563EB', bgColor: '#EFF6FF', textColor: '#1E3A8A',
+    description: 'Internet, data, programming and binary',
+    topics: [
+      ...all the topics...
+    ],
+  },
 ]
 
 export const getSubject = (id) => SUBJECTS.find(s => s.id === id)
@@ -455,4 +464,5 @@ export const getAllQuestions = () => [
   ...spanishQuestions,
   ...latinQuestions,
   ...mandarinQuestions,
+  ...csQuestions,
 ]
