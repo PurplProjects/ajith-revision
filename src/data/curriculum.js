@@ -1,4 +1,4 @@
-// Subjects metadata and revision content
+// Subjects metadata and revision content for all subjects including CS
 // Questions are in questions/*.js and imported below
 
 import { englishQuestions } from './questions/english'
