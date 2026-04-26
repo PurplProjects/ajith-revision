@@ -56,12 +56,19 @@ function GradeStrip({ subjectId, grades, teachers }) {
         </div>
         {teacher && <span className="ml-auto text-xs text-gray-400">{teacher.name}</span>}
       </div>
-      {latestComment && (
-        <div className="px-4 py-3 bg-amber-50">
-          <p className="text-xs font-semibold text-amber-700 mb-1">💬 Teacher feedback</p>
-          <p className="text-xs text-gray-700">{latestComment}</p>
-        </div>
-      )}
+      <div className="px-4 py-3 bg-amber-50 space-y-2">
+        <p className="text-xs font-semibold text-amber-700">💬 Teacher feedback</p>
+        {[...GRADE_TERMS].reverse().map(({ key, label }) => {
+          const comment = sg[key]?.comment
+          if (!comment) return null
+          return (
+            <div key={key} className="border-l-2 border-amber-300 pl-2">
+              <p className="text-xs font-semibold text-amber-600 mb-0.5">{label}</p>
+              <p className="text-xs text-gray-700">{comment}</p>
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }
