@@ -12,6 +12,60 @@ const revisionModules = {
   cs:      () => import('../data/revision/cs.js').then(m => m.csRevision),
 }
 
+
+const GRADE_TERMS = [
+  { key: 'michaelmas-2025', label: 'Dec' },
+  { key: 'lent-2026',       label: 'Jan' },
+  { key: 'trinity-2026',    label: 'Apr' },
+]
+
+function gradeColor(g) {
+  if (g >= 8) return '#1D9E75'
+  if (g === 7) return '#378ADD'
+  if (g === 6) return '#BA7517'
+  return '#D85A30'
+}
+
+function GradeStrip({ subjectId, grades, teachers }) {
+  const sg = grades[subjectId] ?? {}
+  const teacher = teachers[subjectId]
+  const termGrades = GRADE_TERMS.map(t => ({ ...t, grade: sg[t.key]?.grade, comment: sg[t.key]?.comment }))
+  const hasAny = termGrades.some(t => t.grade)
+  const latestComment = sg['trinity-2026']?.comment ?? sg['lent-2026']?.comment ?? sg['michaelmas-2025']?.comment
+  if (!hasAny) return null
+  return (
+    <div className="mb-5 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="flex items-center gap-4 px-4 py-3 border-b border-gray-50">
+        <span className="text-xs font-semibold text-gray-500 flex-shrink-0">School grades</span>
+        <div className="flex items-center gap-3">
+          {termGrades.map(({ key, label, grade }, i) => {
+            if (!grade) return null
+            return (
+              <div key={key} className="flex items-center gap-2">
+                {i > 0 && <span className="text-gray-300 text-xs">→</span>}
+                <div className="flex flex-col items-center">
+                  <span className="text-xs text-gray-400 mb-0.5">{label}</span>
+                  <span
+                    className="inline-flex items-center justify-center w-7 h-7 rounded-full text-white text-xs font-black shadow-sm"
+                    style={{ backgroundColor: gradeColor(grade) }}
+                  >{grade}</span>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+        {teacher && <span className="ml-auto text-xs text-gray-400">{teacher.name}</span>}
+      </div>
+      {latestComment && (
+        <div className="px-4 py-3 bg-amber-50">
+          <p className="text-xs font-semibold text-amber-700 mb-1">💬 Teacher feedback</p>
+          <p className="text-xs text-gray-700">{latestComment}</p>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function SubjectPage() {
   const { subjectId } = useParams()
   const navigate = useNavigate()
