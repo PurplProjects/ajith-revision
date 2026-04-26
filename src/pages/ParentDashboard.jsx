@@ -324,76 +324,86 @@ export default function ParentDashboard() {
         {tab === 'grades' && (
           <div className="space-y-3">
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-              {/* Header row */}
-              <div className="flex items-center px-4 py-2 bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-500">
-                <span className="flex-1">Subject</span>
-                <span className="w-9 text-center">Dec</span>
-                <span className="w-9 text-center">Jan</span>
-                <span className="w-9 text-center">Apr</span>
-                <span className="w-12 text-center">Trend</span>
-                <span className="w-6"></span>
-              </div>
-
-              {SUBJECTS.map(subject => {
-                const sg = grades[subject.id] ?? {}
-                const dec = sg['michaelmas-2025']?.grade
-                const jan = sg['lent-2026']?.grade
-                const apr = sg['trinity-2026']?.grade
-                const latestComment = sg['trinity-2026']?.comment ?? sg['lent-2026']?.comment ?? sg['michaelmas-2025']?.comment
-                const teacher = teachers[subject.id]
-                const isExpanded = expandedGrade === subject.id
-
-                return (
-                  <div key={subject.id} className="border-b border-gray-50 last:border-0">
-                    <div className="flex items-center px-4 py-2.5">
-                      <div className="flex-1 flex items-center gap-2 min-w-0">
-                        <span className="flex-shrink-0 text-lg">{subject.icon}</span>
-                        <div className="min-w-0">
-                          <span className="text-sm font-semibold text-gray-800 truncate block">{subject.name}</span>
-                          {teacher && <p className="text-xs text-gray-400 truncate">{teacher.name}</p>}
-                        </div>
-                      </div>
-                      <div className="w-9 flex justify-center"><GradePill grade={dec} /></div>
-                      <div className="w-9 flex justify-center"><GradePill grade={jan} /></div>
-                      <div className="w-9 flex justify-center"><GradePill grade={apr} /></div>
-                      <div className="w-12 flex justify-center"><TrendBadge from={dec} to={apr} /></div>
-                      <button
-                        onClick={() => setExpandedGrade(isExpanded ? null : subject.id)}
-                        className="w-6 text-center text-gray-400 hover:text-gray-600 text-xs"
-                      >
-                        {isExpanded ? '▲' : '▼'}
-                      </button>
-                    </div>
-                    {isExpanded && (
-                      <div className="px-4 pb-3 space-y-2">
-                        {TERMS.map(({ key, label }) => {
-                          const termData = sg[key]
-                          if (!termData?.comment) return null
-                          return (
-                            <div key={key} className="p-3 bg-amber-50 rounded-lg border border-amber-100">
-                              <p className="text-xs font-semibold text-amber-800 mb-1">
-                                {label} {teacher ? `— ${teacher.name}` : ''}
-                              </p>
-                              <p className="text-xs text-amber-700">{termData.comment}</p>
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="bg-gray-50 border-b border-gray-100">
+                    <th className="text-left text-xs font-semibold text-gray-500 px-4 py-2">Subject</th>
+                    <th className="text-center text-xs font-semibold text-gray-500 px-2 py-2 w-16">Dec</th>
+                    <th className="text-center text-xs font-semibold text-gray-500 px-2 py-2 w-16">Jan</th>
+                    <th className="text-center text-xs font-semibold text-gray-500 px-2 py-2 w-16">Apr</th>
+                    <th className="text-center text-xs font-semibold text-gray-500 px-2 py-2 w-16">Trend</th>
+                    <th className="w-8"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {SUBJECTS.map(subject => {
+                    const sg = grades[subject.id] ?? {}
+                    const dec = sg['michaelmas-2025']?.grade
+                    const jan = sg['lent-2026']?.grade
+                    const apr = sg['trinity-2026']?.grade
+                    const teacher = teachers[subject.id]
+                    const isExpanded = expandedGrade === subject.id
+                    return (
+                      <>
+                        <tr key={subject.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition">
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-2">
+                              <span className="text-lg">{subject.icon}</span>
+                              <div>
+                                <p className="text-sm font-semibold text-gray-800">{subject.name}</p>
+                                {teacher && <p className="text-xs text-gray-400">{teacher.name}</p>}
+                              </div>
                             </div>
-                          )
-                        })}
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
+                          </td>
+                          <td className="text-center px-2 py-3"><GradePill grade={dec} /></td>
+                          <td className="text-center px-2 py-3"><GradePill grade={jan} /></td>
+                          <td className="text-center px-2 py-3"><GradePill grade={apr} /></td>
+                          <td className="text-center px-2 py-3"><TrendBadge from={dec} to={apr} /></td>
+                          <td className="text-center px-2 py-3">
+                            <button
+                              onClick={() => setExpandedGrade(isExpanded ? null : subject.id)}
+                              className="text-gray-400 hover:text-gray-600 text-xs"
+                            >
+                              {isExpanded ? '▲' : '▼'}
+                            </button>
+                          </td>
+                        </tr>
+                        {isExpanded && (
+                          <tr key={subject.id + '-comments'} className="bg-amber-50">
+                            <td colSpan={6} className="px-4 pb-3 pt-1">
+                              <div className="space-y-2">
+                                {TERMS.map(({ key, label }) => {
+                                  const termData = sg[key]
+                                  if (!termData?.comment) return null
+                                  return (
+                                    <div key={key} className="p-3 bg-white rounded-lg border border-amber-100">
+                                      <p className="text-xs font-semibold text-amber-800 mb-1">
+                                        {label}{teacher ? ` — ${teacher.name}` : ''}
+                                      </p>
+                                      <p className="text-xs text-amber-700">{termData.comment}</p>
+                                    </div>
+                                  )
+                                })}
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </>
+                    )
+                  })}
+                </tbody>
+              </table>
             </div>
 
             {/* Grade scale legend */}
             <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
               <p className="text-xs font-semibold text-gray-500 mb-2">Grade scale (GCSE aligned, max 9)</p>
-              <div className="flex gap-2 flex-wrap">
+              <div className="flex gap-3 flex-wrap">
                 {[
-                  { range: '8–9', label: 'Excellent', color: '#1D9E75' },
-                  { range: '7',   label: 'Good',      color: '#378ADD' },
-                  { range: '6',   label: 'Satisfactory', color: '#BA7517' },
-                  { range: '1–5', label: 'Needs work', color: '#D85A30' },
+                  { range: '8–9', label: 'Excellent',     color: '#1D9E75' },
+                  { range: '7',   label: 'Good',          color: '#378ADD' },
+                  { range: '6',   label: 'Satisfactory',  color: '#BA7517' },
+                  { range: '1–5', label: 'Needs work',    color: '#D85A30' },
                 ].map(g => (
                   <div key={g.range} className="flex items-center gap-1.5">
                     <div className="w-5 h-5 rounded-full flex-shrink-0" style={{ backgroundColor: g.color }} />
