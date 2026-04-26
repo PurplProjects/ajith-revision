@@ -1,11 +1,19 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
+import { startRevisionSession, endRevisionSession, logCardFlip } from '../lib/db'
 
 // ── Flip Card ──────────────────────────────────────────────────────────────
-function FlashCard({ card, index, subjectColor }) {
+function FlashCard({ card, index, subjectColor, onFlip }) {
   const [flipped, setFlipped] = useState(false)
+
+  function handleFlip() {
+    const newFlipped = !flipped
+    setFlipped(newFlipped)
+    if (newFlipped && onFlip) onFlip() // only log on reveal, not on flip back
+  }
+
   return (
     <div
-      onClick={() => setFlipped(f => !f)}
+      onClick={handleFlip}
       className="cursor-pointer rounded-2xl border-2 transition-all select-none min-h-[120px] flex flex-col justify-between p-4"
       style={{
         borderColor: flipped ? subjectColor : '#e5e7eb',
@@ -38,12 +46,10 @@ function FormulaCard({ formula }) {
         <span className="font-bold text-gray-800 text-sm">{formula.name}</span>
         <span className="text-xs text-gray-400">{formula.units}</span>
       </div>
-      {/* Main formula */}
       <div className="bg-indigo-50 rounded-xl px-4 py-3 text-center mb-3">
         <span className="text-xl font-bold text-indigo-700 font-mono">{formula.formula}</span>
         <p className="text-xs text-indigo-500 mt-1">{formula.words}</p>
       </div>
-      {/* Rearrangements */}
       <div>
         <p className="text-xs font-semibold text-gray-500 mb-1">Rearrangements:</p>
         <div className="flex gap-2">
@@ -107,11 +113,42 @@ function ResourceLink({ resource }) {
 // ── Main RevisionPanel ─────────────────────────────────────────────────────
 export default function RevisionPanel({ revision, subjectColor, teacher }) {
   const [activeTopicId, setActiveTopicId] = useState(null)
-  const [section, setSection] = useState('topics') // topics | formulas | resources
+  const [section, setSection] = useState('topics')
+
+  // Session tracking refs
+  const sessionIdRef = useRef(null)
+  const startTimeRef = useRef(null)
 
   if (!revision) return null
 
   const activeTopic = revision.topics?.find(t => t.id === activeTopicId)
+
+  // ── Start a timed revision session for a topic ──────────────────────────
+  async function openTopic(topicId) {
+    await closeTopic() // end any existing session first
+    setActiveTopicId(topicId)
+    const sid = await startRevisionSession(revision.subjectId, topicId)
+    if (sid) {
+      sessionIdRef.current = sid
+      startTimeRef.current = Date.now()
+    }
+  }
+
+  // ── End the current topic session ──────────────────────────────────────
+  async function closeTopic() {
+    setActiveTopicId(null)
+    if (sessionIdRef.current && startTimeRef.current) {
+      const duration = Math.floor((Date.now() - startTimeRef.current) / 1000)
+      await endRevisionSession(sessionIdRef.current, duration)
+      sessionIdRef.current = null
+      startTimeRef.current = null
+    }
+  }
+
+  // ── Log a card flip ────────────────────────────────────────────────────
+  function handleCardFlip(topicId) {
+    logCardFlip(revision.subjectId, topicId)
+  }
 
   return (
     <div className="space-y-4">
@@ -155,7 +192,7 @@ export default function RevisionPanel({ revision, subjectColor, teacher }) {
         ].map(tab => (
           <button
             key={tab.key}
-            onClick={() => { setSection(tab.key); setActiveTopicId(null) }}
+            onClick={() => { setSection(tab.key); closeTopic() }}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
               section === tab.key ? 'text-white' : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
             }`}
@@ -175,7 +212,7 @@ export default function RevisionPanel({ revision, subjectColor, teacher }) {
               {revision.topics.map(topic => (
                 <button
                   key={topic.id}
-                  onClick={() => setActiveTopicId(topic.id)}
+                  onClick={() => openTopic(topic.id)}
                   className="w-full flex items-center justify-between p-4 bg-white rounded-xl border border-gray-100 hover:border-gray-300 hover:shadow-sm transition"
                 >
                   <div className="flex items-center gap-3">
@@ -202,7 +239,7 @@ export default function RevisionPanel({ revision, subjectColor, teacher }) {
           {activeTopicId && activeTopic && (
             <div>
               <button
-                onClick={() => setActiveTopicId(null)}
+                onClick={closeTopic}
                 className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 mb-4"
               >
                 ← All topics
@@ -222,6 +259,7 @@ export default function RevisionPanel({ revision, subjectColor, teacher }) {
                     card={card}
                     index={i}
                     subjectColor={activeTopic.color}
+                    onFlip={() => handleCardFlip(activeTopic.id)}
                   />
                 ))}
               </div>
@@ -250,7 +288,6 @@ export default function RevisionPanel({ revision, subjectColor, teacher }) {
           {revision.fifa.map((step, i) => (
             <FifaStep key={i} step={step} color={subjectColor} />
           ))}
-          {/* Worked example */}
           <div className="bg-indigo-50 rounded-xl border border-indigo-100 p-4 mt-2">
             <p className="text-xs font-bold text-indigo-800 mb-2">Worked example: A car travels 200 m in 10 s. What is its speed?</p>
             <div className="space-y-1 text-xs text-indigo-700">
@@ -266,7 +303,7 @@ export default function RevisionPanel({ revision, subjectColor, teacher }) {
       {/* RESOURCES SECTION */}
       {section === 'resources' && revision.resources && (
         <div className="space-y-3">
-          <p className="text-xs text-gray-500">Links recommended by Mr King. All open in a new tab.</p>
+          <p className="text-xs text-gray-500">Recommended resources. All open in a new tab.</p>
           {revision.resources.map((r, i) => (
             <ResourceLink key={i} resource={r} />
           ))}
