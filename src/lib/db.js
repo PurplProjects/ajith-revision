@@ -335,3 +335,74 @@ export async function fetchStudentTeachers(studentId = STUDENT_ID, academicYear 
   }
   return result
 }
+
+// ─── Revision tracking ────────────────────────────────────────────────────────
+// topic_id convention: 'revision-{subjectId}-{topicId}' for topic sessions
+//                      'revision-{subjectId}-card-{topicId}' for card flips
+
+export async function startRevisionSession(subjectId, topicId) {
+  const { data, error } = await supabase
+    .from('sessions')
+    .insert({
+      student_id: STUDENT_ID,
+      subject_id: subjectId,
+      topic_id: `revision-${subjectId}-${topicId}`,
+      started_at: new Date().toISOString(),
+    })
+    .select()
+    .single()
+  if (error) { console.error('startRevisionSession:', error); return null }
+  return data.id
+}
+
+export async function endRevisionSession(sessionId, durationSeconds) {
+  if (!sessionId || !durationSeconds) return
+  const rounded = Math.max(1, Math.round(durationSeconds))
+  const { error } = await supabase
+    .from('sessions')
+    .update({ ended_at: new Date().toISOString(), duration_seconds: rounded })
+    .eq('id', sessionId)
+  if (error) console.error('endRevisionSession:', error)
+}
+
+export async function logCardFlip(subjectId, topicId) {
+  // Each card flip logs a very short session (1 second) to count flips
+  // We use a special topic_id prefix 'revision-card-' to count them separately
+  const { error } = await supabase
+    .from('sessions')
+    .insert({
+      student_id: STUDENT_ID,
+      subject_id: subjectId,
+      topic_id: `revision-card-${subjectId}-${topicId}`,
+      started_at: new Date().toISOString(),
+      ended_at: new Date().toISOString(),
+      duration_seconds: 1,
+    })
+  if (error) console.error('logCardFlip:', error)
+}
+
+export async function fetchRevisionStats(studentId = STUDENT_ID) {
+  const { data, error } = await supabase
+    .from('sessions')
+    .select('subject_id, topic_id, duration_seconds')
+    .eq('student_id', studentId)
+    .like('topic_id', 'revision-%')
+  if (error) { console.error('fetchRevisionStats:', error); return {} }
+
+  const stats = {}
+  for (const row of data ?? []) {
+    const sid = row.subject_id
+    if (!stats[sid]) stats[sid] = { timeSeconds: 0, topicsOpened: new Set(), cardsFlipped: 0 }
+    if (row.topic_id.startsWith('revision-card-')) {
+      stats[sid].cardsFlipped++
+    } else {
+      stats[sid].timeSeconds += row.duration_seconds ?? 0
+      stats[sid].topicsOpened.add(row.topic_id)
+    }
+  }
+  // Convert sets to counts
+  for (const sid of Object.keys(stats)) {
+    stats[sid].topicsOpened = stats[sid].topicsOpened.size
+  }
+  return stats
+}
