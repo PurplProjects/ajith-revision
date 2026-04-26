@@ -325,13 +325,13 @@ export default function ParentDashboard() {
           <div className="space-y-3">
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
               {/* Header row */}
-              <div className="grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-2 px-4 py-2 bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-500">
+              <div className="grid grid-cols-[1fr_52px_52px_52px_52px_24px] gap-1 px-4 py-2 bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-500">
                 <span>Subject</span>
-                <span className="w-16 text-center">Dec '25</span>
-                <span className="w-16 text-center">Jan '26</span>
-                <span className="w-16 text-center">Apr '26</span>
-                <span className="w-16 text-center">Trend</span>
-                <span className="w-6"></span>
+                <span className="text-center">Dec</span>
+                <span className="text-center">Jan</span>
+                <span className="text-center">Apr</span>
+                <span className="text-center">Trend</span>
+                <span></span>
               </div>
 
               {SUBJECTS.map(subject => {
@@ -345,18 +345,18 @@ export default function ParentDashboard() {
 
                 return (
                   <div key={subject.id} className="border-b border-gray-50 last:border-0">
-                    <div className="grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-2 px-4 py-3 items-center">
-                      <div className="flex items-center gap-2">
-                        <span>{subject.icon}</span>
-                        <div>
-                          <span className="text-sm font-semibold text-gray-800">{subject.name}</span>
-                          {teacher && <p className="text-xs text-gray-400">{teacher.name}</p>}
+                    <div className="grid grid-cols-[1fr_52px_52px_52px_52px_24px] gap-1 px-4 py-3 items-center">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="flex-shrink-0">{subject.icon}</span>
+                        <div className="min-w-0">
+                          <span className="text-sm font-semibold text-gray-800 truncate block">{subject.name}</span>
+                          {teacher && <p className="text-xs text-gray-400 truncate">{teacher.name}</p>}
                         </div>
                       </div>
-                      <div className="w-16 flex justify-center"><GradePill grade={dec} /></div>
-                      <div className="w-16 flex justify-center"><GradePill grade={jan} /></div>
-                      <div className="w-16 flex justify-center"><GradePill grade={apr} /></div>
-                      <div className="w-16 flex justify-center"><TrendBadge from={dec} to={apr} /></div>
+                      <div className="flex justify-center"><GradePill grade={dec} /></div>
+                      <div className="flex justify-center"><GradePill grade={jan} /></div>
+                      <div className="flex justify-center"><GradePill grade={apr} /></div>
+                      <div className="flex justify-center"><TrendBadge from={dec} to={apr} /></div>
                       <button
                         onClick={() => setExpandedGrade(isExpanded ? null : subject.id)}
                         className="w-6 text-gray-400 hover:text-gray-600 text-xs"
@@ -364,14 +364,20 @@ export default function ParentDashboard() {
                         {isExpanded ? '▲' : '▼'}
                       </button>
                     </div>
-                    {isExpanded && latestComment && (
-                      <div className="px-4 pb-3">
-                        <div className="p-3 bg-amber-50 rounded-lg border border-amber-100">
-                          <p className="text-xs font-semibold text-amber-800 mb-1">
-                            Latest teacher comment {teacher ? `— ${teacher.name}` : ''}
-                          </p>
-                          <p className="text-xs text-amber-700">{latestComment}</p>
-                        </div>
+                    {isExpanded && (
+                      <div className="px-4 pb-3 space-y-2">
+                        {TERMS.map(({ key, label }) => {
+                          const termData = sg[key]
+                          if (!termData?.comment) return null
+                          return (
+                            <div key={key} className="p-3 bg-amber-50 rounded-lg border border-amber-100">
+                              <p className="text-xs font-semibold text-amber-800 mb-1">
+                                {label} {teacher ? `— ${teacher.name}` : ''}
+                              </p>
+                              <p className="text-xs text-amber-700">{termData.comment}</p>
+                            </div>
+                          )
+                        })}
                       </div>
                     )}
                   </div>
