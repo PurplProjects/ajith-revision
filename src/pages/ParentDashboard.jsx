@@ -3,7 +3,7 @@ import { SUBJECTS } from '../data/curriculum'
 import {
   fetchAllSubmissions, fetchProgress, fetchExposuresBySubject,
   fetchSubmissionWithQuestions, updateSubmissionScore,
-  fetchStudentGrades, fetchStudentTeachers
+  fetchStudentGrades, fetchStudentTeachers, fetchRevisionStats
 } from '../lib/db'
 
 const CONFIDENCE_LABELS = { 1: '😟 Very unsure', 2: '😕 Unsure', 3: '😐 OK', 4: '🙂 Confident', 5: '😄 Very confident' }
@@ -49,6 +49,7 @@ export default function ParentDashboard() {
   const [progress, setProgress] = useState(null)
   const [exposures, setExposures] = useState({})
   const [grades, setGrades] = useState({})     // { subjectId: { term: { grade, comment } } }
+  const [revisionStats, setRevisionStats] = useState({})
   const [teachers, setTeachers] = useState({}) // { subjectId: { name, email } }
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState('grades')
@@ -61,12 +62,13 @@ export default function ParentDashboard() {
 
   useEffect(() => {
     async function load() {
-      const [s, p, e, g, t] = await Promise.all([
+      const [s, p, e, g, t, rs] = await Promise.all([
         fetchAllSubmissions(),
         fetchProgress(),
         fetchExposuresBySubject(),
         fetchStudentGrades(),
         fetchStudentTeachers(),
+        fetchRevisionStats(),
       ])
       setSubmissions(s)
       setProgress(p)
@@ -80,6 +82,7 @@ export default function ParentDashboard() {
         gradeMap[row.subject_id][row.term] = { grade: row.grade, comment: row.teacher_comment }
       }
       setGrades(gradeMap)
+      setRevisionStats(rs)
       setLoading(false)
     }
     load()
@@ -432,6 +435,13 @@ export default function ParentDashboard() {
                     <div className="ml-auto flex items-center gap-4 text-xs text-gray-500">
                       <span>⏱️ {timeMin} min</span>
                       <span>📝 {subs.length} test{subs.length !== 1 ? 's' : ''}</span>
+                      {revisionStats[subject.id] && (
+                        <>
+                          <span>🃏 {revisionStats[subject.id].cardsFlipped} cards</span>
+                          <span>📖 {revisionStats[subject.id].topicsOpened} topics</span>
+                          <span>⏱️ {Math.round(revisionStats[subject.id].timeSeconds / 60)}m revision</span>
+                        </>
+                      )}
                     </div>
                   </div>
                   {scores.length > 0 ? (
