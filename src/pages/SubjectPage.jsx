@@ -176,6 +176,8 @@ export default function SubjectPage() {
         </div>
       </div>
 
+      <GradeStrip subjectId={subjectId} grades={grades} teachers={teachers} />
+
       <div className="flex gap-2 mb-5">
         <button
           onClick={() => setTab('notes')}
