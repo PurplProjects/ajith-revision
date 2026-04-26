@@ -325,13 +325,13 @@ export default function ParentDashboard() {
           <div className="space-y-3">
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
               {/* Header row */}
-              <div className="grid grid-cols-[1fr_52px_52px_52px_52px_24px] gap-1 px-4 py-2 bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-500">
-                <span>Subject</span>
-                <span className="text-center">Dec</span>
-                <span className="text-center">Jan</span>
-                <span className="text-center">Apr</span>
-                <span className="text-center">Trend</span>
-                <span></span>
+              <div className="flex items-center px-4 py-2 bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-500">
+                <span className="flex-1">Subject</span>
+                <span className="w-9 text-center">Dec</span>
+                <span className="w-9 text-center">Jan</span>
+                <span className="w-9 text-center">Apr</span>
+                <span className="w-12 text-center">Trend</span>
+                <span className="w-6"></span>
               </div>
 
               {SUBJECTS.map(subject => {
@@ -345,21 +345,21 @@ export default function ParentDashboard() {
 
                 return (
                   <div key={subject.id} className="border-b border-gray-50 last:border-0">
-                    <div className="grid grid-cols-[1fr_52px_52px_52px_52px_24px] gap-1 px-4 py-3 items-center">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <span className="flex-shrink-0">{subject.icon}</span>
+                    <div className="flex items-center px-4 py-2.5">
+                      <div className="flex-1 flex items-center gap-2 min-w-0">
+                        <span className="flex-shrink-0 text-lg">{subject.icon}</span>
                         <div className="min-w-0">
                           <span className="text-sm font-semibold text-gray-800 truncate block">{subject.name}</span>
                           {teacher && <p className="text-xs text-gray-400 truncate">{teacher.name}</p>}
                         </div>
                       </div>
-                      <div className="flex justify-center"><GradePill grade={dec} /></div>
-                      <div className="flex justify-center"><GradePill grade={jan} /></div>
-                      <div className="flex justify-center"><GradePill grade={apr} /></div>
-                      <div className="flex justify-center"><TrendBadge from={dec} to={apr} /></div>
+                      <div className="w-9 flex justify-center"><GradePill grade={dec} /></div>
+                      <div className="w-9 flex justify-center"><GradePill grade={jan} /></div>
+                      <div className="w-9 flex justify-center"><GradePill grade={apr} /></div>
+                      <div className="w-12 flex justify-center"><TrendBadge from={dec} to={apr} /></div>
                       <button
                         onClick={() => setExpandedGrade(isExpanded ? null : subject.id)}
-                        className="w-6 text-gray-400 hover:text-gray-600 text-xs"
+                        className="w-6 text-center text-gray-400 hover:text-gray-600 text-xs"
                       >
                         {isExpanded ? '▲' : '▼'}
                       </button>
