@@ -294,3 +294,44 @@ export async function fetchProgress() {
 
   return { timeBySubject, topicsBySubject, attemptsBySubject, scoresBySubject, confidenceBySubject }
 }
+
+// ─── Grades ───────────────────────────────────────────────────────────────────
+export async function fetchStudentGrades(studentId = STUDENT_ID) {
+  const { data, error } = await supabase
+    .from('grades')
+    .select('subject_id, term, grade, teacher_comment')
+    .eq('student_id', studentId)
+    .order('term', { ascending: true })
+  if (error) console.error('fetchStudentGrades error:', error)
+  return data ?? []
+}
+
+export async function fetchStudentTeachers(studentId = STUDENT_ID, academicYear = '2025-2026') {
+  // Step 1: get subject->teacher_id mappings
+  const { data: links, error: linkErr } = await supabase
+    .from('student_subject_teachers')
+    .select('subject_id, teacher_id')
+    .eq('student_id', studentId)
+    .eq('academic_year', academicYear)
+
+  if (linkErr || !links?.length) return {}
+
+  // Step 2: fetch teacher details for those IDs
+  const teacherIds = links.map(l => l.teacher_id)
+  const { data: teacherRows, error: tErr } = await supabase
+    .from('teachers')
+    .select('id, name, email')
+    .in('id', teacherIds)
+
+  if (tErr || !teacherRows) return {}
+
+  // Step 3: build { subjectId: { name, email } } map
+  const teacherMap = {}
+  for (const t of teacherRows) teacherMap[t.id] = t
+
+  const result = {}
+  for (const link of links) {
+    result[link.subject_id] = teacherMap[link.teacher_id] ?? null
+  }
+  return result
+}
