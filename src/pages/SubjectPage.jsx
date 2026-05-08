@@ -6,12 +6,18 @@ import RevisionPanel from '../components/RevisionPanel'
 
 // Add new subjects here as revision content is built
 const revisionModules = {
-  spanish: () => import('../data/revision/spanish.js').then(m => m.spanishRevision),
-  maths:   () => import('../data/revision/maths.js').then(m => m.mathsRevision),
-  physics: () => import('../data/revision/physics.js').then(m => m.physicsRevision),
-  latin:    () => import('../data/revision/latin.js').then(m => m.latinRevision),
-  mandarin: () => import('../data/revision/mandarin.js').then(m => m.mandarinRevision),
-  cs:      () => import('../data/revision/cs.js').then(m => m.csRevision),
+  english:   () => import('../data/revision/english.js').then(m => m.englishRevision),
+  maths:     () => import('../data/revision/maths.js').then(m => m.mathsRevision),
+  biology:   () => import('../data/revision/biology.js').then(m => m.biologyRevision),
+  chemistry: () => import('../data/revision/chemistry.js').then(m => m.chemistryRevision),
+  physics:   () => import('../data/revision/physics.js').then(m => m.physicsRevision),
+  history:   () => import('../data/revision/history.js').then(m => m.historyRevision),
+  geography: () => import('../data/revision/geography.js').then(m => m.geographyRevision),
+  spanish:   () => import('../data/revision/spanish.js').then(m => m.spanishRevision),
+  latin:     () => import('../data/revision/latin.js').then(m => m.latinRevision),
+  mandarin:  () => import('../data/revision/mandarin.js').then(m => m.mandarinRevision),
+  cs:        () => import('../data/revision/cs.js').then(m => m.csRevision),
+  tp:        () => import('../data/revision/tp.js').then(m => m.tpRevision),
 }
 
 
