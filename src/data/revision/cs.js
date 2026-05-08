@@ -130,6 +130,40 @@ export const csRevision = {
         { q: 'What is the binary method called when converting decimal to binary?', a: 'The "column method" — list the column values (128, 64, 32, 16, 8, 4, 2, 1), subtract the largest that fits, place a 1, repeat with the remainder.' },
       ],
     },
+    ,
+    {
+      id: 'cs-p5js',
+      title: 'p5.js Programming',
+      color: '#E91E8C',
+      cards: [
+        { q: 'What is p5.js?', a: 'A JavaScript library for creative coding — used to draw shapes and create visual programs that run in a web browser.' },
+        { q: 'What does createCanvas(width, height) do?', a: 'Creates a drawing canvas of the specified size in pixels. E.g. createCanvas(400, 400) creates a 400×400 pixel canvas.' },
+        { q: 'What does background(colour) do?', a: 'Sets the background colour of the canvas. Can use colour names (\'red\'), RGB values background(255, 0, 0), or greyscale 0-255.' },
+        { q: 'What does fill(colour) do?', a: 'Sets the fill colour for shapes drawn after this command. E.g. fill(\'blue\') or fill(0, 255, 0) for green.' },
+        { q: 'What does rect(x, y, width, height) do?', a: 'Draws a rectangle. x,y = top-left corner position. width = how wide. height = how tall. E.g. rect(50, 50, 100, 80) draws a 100×80 rectangle at position (50,50).' },
+        { q: 'What does ellipse(x, y, width, height) do?', a: 'Draws an ellipse (oval). x,y = centre of the ellipse. width = horizontal diameter. height = vertical diameter. If width=height it draws a circle.' },
+        { q: 'What does noStroke() do?', a: 'Removes the outline (stroke) from shapes — shapes are drawn with no border.' },
+        { q: 'What is the difference between rect() and ellipse() positioning?', a: 'rect() uses the TOP-LEFT corner as its reference point. ellipse() uses the CENTRE as its reference point.' },
+        { q: 'What is the p5.js coordinate system?', a: 'Origin (0,0) is at the TOP-LEFT of the canvas. X increases going RIGHT. Y increases going DOWN (opposite to standard maths).' },
+        { q: 'Write p5.js code to draw a red circle in the centre of a 400x400 canvas.', a: 'createCanvas(400, 400); background(255); fill(\'red\'); noStroke(); ellipse(200, 200, 100, 100);' },
+      ],
+    },
+    {
+      id: 'cs-microbit-label',
+      title: 'Micro:bit — Parts & Sensors',
+      color: '#9C27B0',
+      cards: [
+        { q: 'Name 5 components on the FRONT of a Micro:bit.', a: '5x5 LED display, Button A (left), Button B (right), USB connector (top), logo/touch sensor.' },
+        { q: 'Name 3 components on the BACK of a Micro:bit.', a: 'Processor/CPU chip, Bluetooth antenna, battery connector, reset button, compass (magnetometer), accelerometer.' },
+        { q: 'Which sensor detects temperature?', a: 'The temperature sensor — built into the processor. Reads temperature in degrees C using temperature() in MakeCode.' },
+        { q: 'Which sensor detects movement/tilt/shake?', a: 'The accelerometer — detects acceleration and movement. Used for shake detection, tilt, step counting.' },
+        { q: 'Which sensor detects direction (compass)?', a: 'The magnetometer (compass) — detects magnetic fields to find direction (N/E/S/W). Returns degrees 0-360.' },
+        { q: 'What is the difference between assignment, selection, iteration and sequence?', a: 'Sequence: instructions run in order. Assignment: storing a value in a variable (set x = 5). Selection: if/else decisions. Iteration: repeating code (loops — forever, repeat).' },
+        { q: 'Give an example of assignment in Micro:bit code.', a: 'set score = 0 / set degrees = compass heading — storing a value in a named variable.' },
+        { q: 'Give an example of selection in Micro:bit code.', a: 'if degrees < 45 show N else show S — choosing between different paths.' },
+        { q: 'Give an example of iteration in Micro:bit code.', a: 'forever { show number temperature } — repeating code indefinitely. Or repeat 10 times.' },
+      ],
+    }
   ],
 
   resources: [
