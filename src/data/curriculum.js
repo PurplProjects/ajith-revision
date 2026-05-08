@@ -1,4 +1,4 @@
-// Subjects metadata and revision content for all subjects including CS
+// Subjects metadata and revision content
 // Questions are in questions/*.js and imported below
 
 import { englishQuestions } from './questions/english'
@@ -507,6 +507,46 @@ export const SUBJECTS = [
           'Example: 00001010 = 8 + 2 = 10.',
         ]},
       ], tip: 'Convert these to decimal: 00000111, 00010001, 00101010. Then convert 25 and 42 to binary.' },
+    ],
+  },
+,
+  {
+    id: 'tp', name: 'Theology & Philosophy', icon: '✡️',
+    color: '#7C3AED', bgColor: '#F5F3FF', textColor: '#4C1D95',
+    description: 'World religions, Abrahamic faiths and Sikhism',
+    topics: [
+      { id: 'tp-worldreligions', title: 'World Religions & Belief in God', content: [
+        { heading: 'Key concepts', points: [
+          'Theology: study of God and religious belief.',
+          'Philosophy: study of fundamental questions about existence and reality.',
+          'Theist: believes in God. Atheist: does not. Agnostic: unsure/unknowable.',
+          'Monotheism: one God (Christianity, Islam, Judaism). Polytheism: many gods (Hinduism).',
+          'Christian God: omnipotent, omnibenevolent, omniscient. Trinity: Father, Son, Holy Spirit.',
+          'Muslim belief: Tawhid (strict oneness of God), 99 names of Allah. Shirk is greatest sin.',
+          'Hindu Trimurti: Brahma (creator), Vishnu (preserver), Shiva (destroyer).',
+        ]},
+      ], tip: 'Make a comparison table of how Christianity, Islam and Hinduism each describe God.' },
+      { id: 'tp-abrahamic', title: 'Roots of Abrahamic Religions', content: [
+        { heading: 'Key stories and morals', points: [
+          'Creation: God creates world in 6 days. Moral: world is God's gift, humans are stewards.',
+          'Adam and Eve: disobedience leads to The Fall. Original sin. Free will.',
+          'Abraham: leaves homeland, God promises a great nation (covenant). Circumcision as sign.',
+          'Abraham and Isaac: God tests Abraham's faith — provides a ram. Faith and obedience.',
+          'Moses: leads Israelites out of Egypt. Ten Plagues. Ten Commandments on Sinai.',
+          'Judaism → Christianity: Christians believe Jesus is the promised Messiah.',
+        ]},
+      ], tip: 'Write the moral lesson from each story in one sentence from memory.' },
+      { id: 'tp-sikhism', title: 'Sikhism', content: [
+        { heading: 'Key facts', points: [
+          'Founded by Guru Nanak Dev Ji (1469-1539) in Punjab, India.',
+          'Place of worship: Gurdwara. Includes langar (free community kitchen).',
+          '10 human Gurus — Guru Nanak (1st), Guru Gobind Singh (10th).',
+          'Guru Granth Sahib: the eternal Guru — the holy scripture, treated as a living Guru.',
+          'Guru Gobind Singh founded the Khalsa (1699) and established the 5 Ks.',
+          '5 Ks: Kesh (hair), Kara (bracelet), Kanga (comb), Kachera (shorts), Kirpan (sword).',
+          'Key beliefs: one God (Waheguru), equality of all people, seva (selfless service).',
+        ]},
+      ], tip: 'Write the 5 Ks and what each symbolises from memory.' },
     ],
   },
 ]
