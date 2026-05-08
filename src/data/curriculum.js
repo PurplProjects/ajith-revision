@@ -528,10 +528,10 @@ export const SUBJECTS = [
       ], tip: 'Make a comparison table of how Christianity, Islam and Hinduism each describe God.' },
       { id: 'tp-abrahamic', title: 'Roots of Abrahamic Religions', content: [
         { heading: 'Key stories and morals', points: [
-          'Creation: God creates world in 6 days. Moral: world is God's gift, humans are stewards.',
+          'Creation: God creates world in 6 days. Moral: world is God\'s gift, humans are stewards.',
           'Adam and Eve: disobedience leads to The Fall. Original sin. Free will.',
           'Abraham: leaves homeland, God promises a great nation (covenant). Circumcision as sign.',
-          'Abraham and Isaac: God tests Abraham's faith — provides a ram. Faith and obedience.',
+          'Abraham and Isaac: God tests Abraham\'s faith — provides a ram. Faith and obedience.',
           'Moses: leads Israelites out of Egypt. Ten Plagues. Ten Commandments on Sinai.',
           'Judaism → Christianity: Christians believe Jesus is the promised Messiah.',
         ]},
