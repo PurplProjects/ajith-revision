@@ -509,7 +509,6 @@ export const SUBJECTS = [
       ], tip: 'Convert these to decimal: 00000111, 00010001, 00101010. Then convert 25 and 42 to binary.' },
     ],
   },
-,
   {
     id: 'tp', name: 'Theology & Philosophy', icon: '✡️',
     color: '#7C3AED', bgColor: '#F5F3FF', textColor: '#4C1D95',
