@@ -406,3 +406,59 @@ export async function fetchRevisionStats(studentId = STUDENT_ID) {
   }
   return stats
 }
+
+// ─── Topic practice test ──────────────────────────────────────────────────────
+export async function selectQuestionsForTopicTest(subjectId, topicName) {
+  const { data, error } = await supabase
+    .from('questions')
+    .select('*')
+    .eq('subject_id', subjectId)
+    .eq('topic', topicName)
+  if (error || !data?.length) return []
+
+  const ids = data.map(q => q.id)
+  const { data: exposures } = await supabase
+    .from('question_exposures')
+    .select('question_id, shown_count')
+    .eq('student_id', STUDENT_ID)
+    .in('question_id', ids)
+
+  const expMap = {}
+  for (const e of exposures ?? []) expMap[e.question_id] = e.shown_count
+
+  const withCounts = data.map(q => ({ ...q, shown_count: expMap[q.id] ?? 0 }))
+  const groups = {}
+  for (const q of withCounts) {
+    if (!groups[q.shown_count]) groups[q.shown_count] = []
+    groups[q.shown_count].push(q)
+  }
+  const sorted = []
+  for (const count of Object.keys(groups).map(Number).sort((a, b) => a - b)) {
+    const g = groups[count]
+    for (let i = g.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [g[i], g[j]] = [g[j], g[i]]
+    }
+    sorted.push(...g)
+  }
+  return sorted.slice(0, 10)
+}
+
+// ─── Topic attempts (revision practice tests — MC only) ───────────────────────
+export async function saveTopicAttempt({ studentId = STUDENT_ID, subjectId, topic, score, total }) {
+  const { error } = await supabase
+    .from('topic_attempts')
+    .insert({ student_id: studentId, subject_id: subjectId, topic, score, total })
+  if (error) console.error('saveTopicAttempt:', error)
+  return !error
+}
+
+export async function fetchTopicAttempts(studentId = STUDENT_ID) {
+  const { data, error } = await supabase
+    .from('topic_attempts')
+    .select('subject_id, topic, score, total, submitted_at')
+    .eq('student_id', studentId)
+    .order('submitted_at', { ascending: false })
+  if (error) console.error('fetchTopicAttempts:', error)
+  return data ?? []
+}
