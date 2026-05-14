@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { getSubject } from '../data/curriculum'
 import {
-  seedQuestionsIfNeeded, selectQuestionsForTest, logQuestionExposures,
-  saveSubmission, getNextAttemptNumber, fetchSubjectSubmissions
+  seedQuestionsIfNeeded, selectQuestionsForTest, selectQuestionsForTopicTest,
+  logQuestionExposures, saveSubmission, getNextAttemptNumber, fetchSubjectSubmissions,
+  saveTopicAttempt
 } from '../lib/db'
 
 const CONFIDENCE_LABELS = { 1: '😟 Very unsure', 2: '😕 Unsure', 3: '😐 OK', 4: '🙂 Confident', 5: '😄 Very confident' }
@@ -11,6 +12,8 @@ const CONFIDENCE_LABELS = { 1: '😟 Very unsure', 2: '😕 Unsure', 3: '😐 OK
 export default function AssignmentPage() {
   const { subjectId } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
+  const topicParam = new URLSearchParams(location.search).get('topic')
   const subject = getSubject(subjectId)
 
   const [phase, setPhase] = useState('loading')
@@ -30,7 +33,9 @@ export default function AssignmentPage() {
       try {
         await seedQuestionsIfNeeded()
         const [qs, n, hist] = await Promise.all([
-          selectQuestionsForTest(subjectId),
+          topicParam
+            ? selectQuestionsForTopicTest(subjectId, topicParam)
+            : selectQuestionsForTest(subjectId),
           getNextAttemptNumber(subjectId),
           fetchSubjectSubmissions(subjectId),
         ])
@@ -39,7 +44,14 @@ export default function AssignmentPage() {
           setPhase('error')
           return
         }
-        setQuestions(qs)
+        // Topic tests are MC only — filter out short answer questions
+        const filteredQs = topicParam ? qs.filter(q => q.type === 'multiple_choice') : qs
+        if (!filteredQs || filteredQs.length === 0) {
+          setError('No multiple choice questions found for this topic.')
+          setPhase('error')
+          return
+        }
+        setQuestions(filteredQs)
         setAttemptNum(n)
         setHistory(hist)
         setPhase('intro')
@@ -50,13 +62,12 @@ export default function AssignmentPage() {
       }
     }
     load()
-  }, [subjectId])
+  }, [subjectId, topicParam])
 
   if (!subject) return (
     <div className="text-center py-20 text-gray-500">Subject not found</div>
   )
 
-  // ── PHASE: LOADING ───────────────────────────────────────────────
   if (phase === 'loading') return (
     <div className="flex flex-col items-center py-20 gap-3">
       <div className="text-3xl animate-spin">⚙️</div>
@@ -64,7 +75,6 @@ export default function AssignmentPage() {
     </div>
   )
 
-  // ── PHASE: ERROR ─────────────────────────────────────────────────
   if (phase === 'error') return (
     <div className="max-w-xl mx-auto text-center py-16">
       <div className="text-5xl mb-4">⚠️</div>
@@ -76,18 +86,25 @@ export default function AssignmentPage() {
     </div>
   )
 
-  // ── PHASE: INTRO ─────────────────────────────────────────────────
   if (phase === 'intro') return (
     <div className="max-w-xl mx-auto text-center py-10">
       <div className="text-5xl mb-4">{subject.icon}</div>
       <h1 className="text-2xl font-bold text-gray-900 mb-2">{subject.name} Test</h1>
+      {topicParam && (
+        <div className="inline-block bg-indigo-100 text-indigo-700 text-sm font-semibold px-3 py-1 rounded-full mb-2">
+          📖 Topic: {topicParam}
+        </div>
+      )}
       <p className="text-gray-500 mb-2">Attempt #{attemptNum}</p>
       <div className="bg-gray-50 rounded-xl p-4 mb-6 text-sm text-gray-600 space-y-1">
-        <p>📋 {questions.length} questions — mix of multiple choice and short answer</p>
-        <p>⚡ Questions selected based on what you've seen least</p>
+        <p>📋 {questions.length} questions — {topicParam ? 'multiple choice only' : 'mix of multiple choice and short answer'}</p>
+        {topicParam
+          ? <p>🎯 Topic practice: {topicParam}</p>
+          : <p>⚡ Questions selected based on what you've seen least</p>
+        }
         <p>✅ Instant feedback after each answer</p>
       </div>
-      {history.length > 0 && (
+      {history.length > 0 && !topicParam && (
         <div className="mb-6 text-sm text-gray-400">
           Previous best: {Math.max(...history.filter(h => h.mc_total > 0).map(h => Math.round((h.score / h.mc_total) * 100)))}%
         </div>
@@ -102,7 +119,6 @@ export default function AssignmentPage() {
     </div>
   )
 
-  // ── PHASE: TEST ──────────────────────────────────────────────────
   if (phase === 'test') {
     const q = questions[current]
     if (!q) return null
@@ -128,16 +144,25 @@ export default function AssignmentPage() {
         const mcScore = mcQs.filter(q => answers[q.id] === q.correct_index).length
         setScore({ correct: mcScore, total: mcQs.length })
         await logQuestionExposures(questions.map(q => q.id))
-        await saveSubmission({
-          subjectId,
-          subjectName: subject.name,
-          attemptNumber: attemptNum,
-          questionsShown: questions.map(q => q.id),
-          answers,
-          score: mcScore,
-          mcTotal: mcQs.length,
-          confidenceRating: confidence,
-        })
+        if (topicParam) {
+          await saveTopicAttempt({
+            subjectId,
+            topic: topicParam,
+            score: mcScore,
+            total: mcQs.length,
+          })
+        } else {
+          await saveSubmission({
+            subjectId,
+            subjectName: subject.name,
+            attemptNumber: attemptNum,
+            questionsShown: questions.map(q => q.id),
+            answers,
+            score: mcScore,
+            mcTotal: mcQs.length,
+            confidenceRating: confidence,
+          })
+        }
         setPhase('results')
       } else {
         setCurrent(c => c + 1)
@@ -150,7 +175,7 @@ export default function AssignmentPage() {
           <button onClick={() => navigate(`/subject/${subjectId}`)} className="text-gray-400 hover:text-gray-600">←</button>
           <div className="flex-1">
             <div className="flex justify-between text-xs text-gray-400 mb-1">
-              <span>{subject.name} — Question {current + 1} of {questions.length}</span>
+              <span>{subject.name}{topicParam ? ` — ${topicParam}` : ''} · Q{current + 1}/{questions.length}</span>
               <span className={`px-2 py-0.5 rounded-full text-xs ${
                 q.difficulty === 'foundation' ? 'bg-green-100 text-green-700' :
                 q.difficulty === 'core' ? 'bg-yellow-100 text-yellow-700' :
@@ -241,18 +266,20 @@ export default function AssignmentPage() {
             <div className="mt-4 flex justify-end">
               {isLastQ ? (
                 <div className="flex flex-col items-end gap-3 w-full">
-                  <div className="flex items-center gap-3 text-sm text-gray-600">
-                    <span>How confident do you feel?</span>
-                    <div className="flex gap-1">
-                      {[1,2,3,4,5].map(n => (
-                        <button key={n} onClick={() => setConfidence(n)}
-                          className={`w-8 h-8 rounded-full text-xs font-bold transition ${confidence === n ? 'ring-2 ring-indigo-500' : ''}`}
-                          style={{ backgroundColor: n === confidence ? subject.color + '33' : '#f3f4f6', color: subject.color }}>
-                          {n}
-                        </button>
-                      ))}
+                  {!topicParam && (
+                    <div className="flex items-center gap-3 text-sm text-gray-600">
+                      <span>How confident do you feel?</span>
+                      <div className="flex gap-1">
+                        {[1,2,3,4,5].map(n => (
+                          <button key={n} onClick={() => setConfidence(n)}
+                            className={`w-8 h-8 rounded-full text-xs font-bold transition ${confidence === n ? 'ring-2 ring-indigo-500' : ''}`}
+                            style={{ backgroundColor: n === confidence ? subject.color + '33' : '#f3f4f6', color: subject.color }}>
+                            {n}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
                   <button
                     onClick={handleNext}
                     className="px-6 py-2 rounded-xl text-white font-semibold text-sm hover:opacity-90"
@@ -277,7 +304,6 @@ export default function AssignmentPage() {
     )
   }
 
-  // ── PHASE: RESULTS ───────────────────────────────────────────────
   if (phase === 'results' && score !== null) {
     const pct = Math.round((score.correct / score.total) * 100)
     const emoji = pct >= 80 ? '🏆' : pct >= 60 ? '👍' : pct >= 40 ? '💪' : '📚'
@@ -288,6 +314,11 @@ export default function AssignmentPage() {
         <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 text-center mb-4">
           <div className="text-6xl mb-3">{emoji}</div>
           <h2 className="text-2xl font-bold text-gray-900 mb-1">Test Complete!</h2>
+          {topicParam && (
+            <div className="inline-block bg-indigo-100 text-indigo-700 text-xs font-semibold px-3 py-1 rounded-full mb-2">
+              📖 {topicParam}
+            </div>
+          )}
           <p className="text-gray-500 mb-4">Attempt #{attemptNum}</p>
           <div className="text-5xl font-bold mb-1" style={{ color: subject.color }}>{pct}%</div>
           <p className="text-gray-500 text-sm mb-2">{score.correct} / {score.total} multiple choice correct</p>
@@ -330,11 +361,11 @@ export default function AssignmentPage() {
         </div>
 
         <div className="flex gap-3">
-          <button onClick={() => navigate('/')} className="flex-1 py-3 rounded-xl border-2 border-gray-200 font-semibold text-gray-600 hover:bg-gray-50">
-            Home
+          <button onClick={() => navigate(`/subject/${subjectId}`)} className="flex-1 py-3 rounded-xl border-2 border-gray-200 font-semibold text-gray-600 hover:bg-gray-50">
+            Back
           </button>
           <button
-            onClick={() => navigate(`/subject/${subjectId}/test`)}
+            onClick={() => navigate(`/subject/${subjectId}/test${topicParam ? `?topic=${encodeURIComponent(topicParam)}` : ''}`)}
             className="flex-1 py-3 rounded-xl font-semibold text-white hover:opacity-90"
             style={{ backgroundColor: subject.color }}
           >
