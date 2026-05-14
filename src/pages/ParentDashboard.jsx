@@ -3,7 +3,7 @@ import { SUBJECTS } from '../data/curriculum'
 import {
   fetchAllSubmissions, fetchProgress, fetchExposuresBySubject,
   fetchSubmissionWithQuestions, updateSubmissionScore,
-  fetchStudentGrades, fetchStudentTeachers, fetchRevisionStats
+  fetchStudentGrades, fetchStudentTeachers, fetchRevisionStats, fetchTopicAttempts
 } from '../lib/db'
 
 const CONFIDENCE_LABELS = { 1: '😟 Very unsure', 2: '😕 Unsure', 3: '😐 OK', 4: '🙂 Confident', 5: '😄 Very confident' }
@@ -50,6 +50,7 @@ export default function ParentDashboard() {
   const [exposures, setExposures] = useState({})
   const [grades, setGrades] = useState({})     // { subjectId: { term: { grade, comment } } }
   const [revisionStats, setRevisionStats] = useState({})
+  const [topicAttempts, setTopicAttempts] = useState([])
   const [teachers, setTeachers] = useState({}) // { subjectId: { name, email } }
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState('grades')
@@ -62,13 +63,14 @@ export default function ParentDashboard() {
 
   useEffect(() => {
     async function load() {
-      const [s, p, e, g, t, rs] = await Promise.all([
+      const [s, p, e, g, t, rs, ta] = await Promise.all([
         fetchAllSubmissions(),
         fetchProgress(),
         fetchExposuresBySubject(),
         fetchStudentGrades(),
         fetchStudentTeachers(),
         fetchRevisionStats(),
+        fetchTopicAttempts(),
       ])
       setSubmissions(s)
       setProgress(p)
@@ -83,6 +85,7 @@ export default function ParentDashboard() {
       }
       setGrades(gradeMap)
       setRevisionStats(rs)
+      setTopicAttempts(ta)
       setLoading(false)
     }
     load()
@@ -465,6 +468,51 @@ export default function ParentDashboard() {
                 </div>
               )
             })}
+          </div>
+        )}
+
+        {/* TOPIC PRACTICE SECTION — shown below revision progress */}
+        {tab === 'overview' && topicAttempts.length > 0 && (
+          <div className="mt-4">
+            <h3 className="font-semibold text-gray-700 text-sm px-1 mb-2">✏️ Topic Practice Tests</h3>
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-500">
+                    <th className="text-left px-4 py-2">Subject</th>
+                    <th className="text-left px-4 py-2">Topic</th>
+                    <th className="text-center px-4 py-2 w-20">Score</th>
+                    <th className="text-right px-4 py-2 w-32">Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {topicAttempts.map((a, i) => {
+                    const sub = SUBJECTS.find(s => s.id === a.subject_id)
+                    const pct = Math.round((a.score / a.total) * 100)
+                    return (
+                      <tr key={i} className="border-b border-gray-50 last:border-0">
+                        <td className="px-4 py-2.5">
+                          <div className="flex items-center gap-2">
+                            <span>{sub?.icon}</span>
+                            <span className="text-sm text-gray-700">{sub?.name}</span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-2.5 text-sm text-gray-600">{a.topic}</td>
+                        <td className="px-4 py-2.5 text-center">
+                          <span className="text-sm font-bold" style={{ color: pct >= 80 ? '#1D9E75' : pct >= 60 ? '#378ADD' : '#D85A30' }}>
+                            {pct}%
+                          </span>
+                          <span className="text-xs text-gray-400 ml-1">{a.score}/{a.total}</span>
+                        </td>
+                        <td className="px-4 py-2.5 text-right text-xs text-gray-400">
+                          {new Date(a.submitted_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
 
