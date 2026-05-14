@@ -1,6 +1,84 @@
 import { useState, useRef, useEffect } from 'react'
 import { startRevisionSession, endRevisionSession, logCardFlip } from '../lib/db'
 
+// Maps revision topic IDs to exact DB topic strings for practice tests
+const TOPIC_TO_DB = {
+  'bio-cells': 'Cells',
+  'bio-skills': null,
+  'bio-plant-reproduction': null,
+  'bio-human-reproduction': null,
+  'bio-diet': null,
+  'chem-elements': 'Elements & compounds',
+  'chem-ph': 'Acids & alkalis',
+  'chem-separating': 'Separation techniques',
+  'chem-particles': 'States of matter',
+  'chem-safety': null,
+  'chem-reactions': null,
+  'cs-internet': 'The Internet & Search Engines',
+  'cs-websites': 'Evaluating Websites',
+  'cs-safety': 'Online Safety & Cyberbullying',
+  'cs-data-types': 'Data Types',
+  'cs-microbit': 'Micro:bit Programming',
+  'cs-binary': 'Binary Numbers',
+  'cs-p5js': null,
+  'cs-microbit-label': 'Micro:bit Programming',
+  'english-reading': 'Reading comprehension',
+  'english-analysis': null,
+  'english-creative': null,
+  'geo-population': 'Human geography',
+  'geo-skills': null,
+  'geo-oceans': null,
+  'history-tudors': 'The Tudors',
+  'history-civilisations': 'World Civilisations',
+  'history-norman': null,
+  'history-skills': null,
+  'latin-noun-endings': 'Nouns & cases',
+  'latin-tenses': 'Verbs',
+  'latin-translation': 'Translation',
+  'latin-culture': 'Roman culture',
+  'latin-vocab': null,
+  'mandarin-greetings': 'Core vocabulary',
+  'mandarin-numbers': 'Core vocabulary',
+  'mandarin-days': 'Core vocabulary',
+  'mandarin-family': 'Core vocabulary',
+  'mandarin-location': 'Basic sentences',
+  'mandarin-jobs': 'Basic sentences',
+  'mandarin-daily': 'Basic sentences',
+  'mandarin-speaking': null,
+  'mandarin-writing': null,
+  'maths-number': 'Number',
+  'maths-algebra': 'Algebra',
+  'maths-ratio': null,
+  'maths-geometry': 'Geometry',
+  'maths-statistics': 'Statistics & probability',
+  'physics-forces': 'Forces',
+  'physics-motion': 'Speed & motion',
+  'physics-energy': 'Energy',
+  'physics-electricity': 'Electricity',
+  'physics-waves': 'Light & sound',
+  'working-scientifically': null,
+  'forces-motion': 'Forces',
+  'work-energy': 'Energy',
+  'electricity': 'Electricity',
+  'spanish-intro-family': 'Vocabulary',
+  'spanish-numbers': 'Vocabulary',
+  'spanish-articles': 'Grammar',
+  'spanish-dates': 'Vocabulary',
+  'spanish-pets-colours': 'Vocabulary',
+  'spanish-nationalities': 'Vocabulary',
+  'spanish-verbs': 'Verbs',
+  'spanish-description': 'Vocabulary',
+  'spanish-opinions': 'Vocabulary',
+  'spanish-time': 'Vocabulary',
+  'spanish-school': 'Vocabulary',
+  'spanish-clothes': 'Vocabulary',
+  'spanish-alphabet': null,
+  'tp-worldreligions': null,
+  'tp-abrahamic': null,
+  'tp-sikhism': null,
+}
+
+
 // ── Flip Card ──────────────────────────────────────────────────────────────
 function FlashCard({ card, index, subjectColor, onFlip }) {
   const [flipped, setFlipped] = useState(false)
@@ -210,27 +288,39 @@ export default function RevisionPanel({ revision, subjectColor, teacher }) {
           {!activeTopicId && (
             <div className="space-y-2">
               {revision.topics.map(topic => (
-                <button
-                  key={topic.id}
-                  onClick={() => openTopic(topic.id)}
-                  className="w-full flex items-center justify-between p-4 bg-white rounded-xl border border-gray-100 hover:border-gray-300 hover:shadow-sm transition"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: topic.color }} />
-                    <div className="text-left">
-                      <p className="font-semibold text-gray-800 text-sm">{topic.title}</p>
-                      <p className="text-xs text-gray-400">{topic.cards.length} flashcards</p>
+                <div key={topic.id} className="bg-white rounded-xl border border-gray-100 hover:border-gray-300 hover:shadow-sm transition overflow-hidden">
+                  <button
+                    onClick={() => openTopic(topic.id)}
+                    className="w-full flex items-center justify-between p-4"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: topic.color }} />
+                      <div className="text-left">
+                        <p className="font-semibold text-gray-800 text-sm">{topic.title}</p>
+                        <p className="text-xs text-gray-400">{topic.cards.length} flashcards</p>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {topic.badge && (
-                      <span className="text-xs font-bold px-2 py-0.5 rounded-full text-white" style={{ backgroundColor: topic.badgeColor ?? topic.color }}>
-                        {topic.badge}
-                      </span>
-                    )}
-                    <span className="text-gray-400 text-sm">→</span>
-                  </div>
-                </button>
+                    <div className="flex items-center gap-2">
+                      {topic.badge && (
+                        <span className="text-xs font-bold px-2 py-0.5 rounded-full text-white" style={{ backgroundColor: topic.badgeColor ?? topic.color }}>
+                          {topic.badge}
+                        </span>
+                      )}
+                      <span className="text-gray-400 text-sm">→</span>
+                    </div>
+                  </button>
+                  {TOPIC_TO_DB[topic.id] && (
+                    <div className="px-4 pb-3 flex justify-end border-t border-gray-50">
+                      <a
+                        href={`/subject/${revision.subjectId}/test?topic=${encodeURIComponent(TOPIC_TO_DB[topic.id])}`}
+                        className="text-xs font-semibold px-3 py-1.5 rounded-lg text-white mt-2 inline-block hover:opacity-90 transition"
+                        style={{ backgroundColor: topic.color }}
+                      >
+                        ✏️ Practice test
+                      </a>
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
           )}
