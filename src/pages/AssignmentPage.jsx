@@ -365,7 +365,10 @@ export default function AssignmentPage() {
             Back
           </button>
           <button
-            onClick={() => navigate(`/subject/${subjectId}/test${topicParam ? `?topic=${encodeURIComponent(topicParam)}` : ''}`)}
+            onClick={() => {
+              const url = `/subject/${subjectId}/test${topicParam ? `?topic=${encodeURIComponent(topicParam)}` : ''}`
+              window.location.href = url
+            }}
             className="flex-1 py-3 rounded-xl font-semibold text-white hover:opacity-90"
             style={{ backgroundColor: subject.color }}
           >
